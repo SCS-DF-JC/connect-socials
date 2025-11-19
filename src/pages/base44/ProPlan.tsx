@@ -1,16 +1,15 @@
+
 import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-// import { base44 } from "@/api/base44Client";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, ArrowRight, Sparkles, FileText, Calendar, BarChart3, Mail, Loader2 } from "lucide-react";
+import { CheckCircle, ArrowRight, Star, FileText, Share2, BarChart3, Zap, Target, Award, Loader2 } from "lucide-react";
 
-export default function StarterPlan() {
+export default function ProPlan() {
   const formRef = useRef(null);
   const [formData, setFormData] = useState({
     customer_name: "",
@@ -28,8 +27,8 @@ export default function StarterPlan() {
         business_name: data.business_name,
         customer_email: data.customer_email,
         notes: data.notes,
-        package_name: "Starter",
-        package_price: 49,
+        package_name: "Pro",
+        package_price: 99,
         payment_status: "pending",
         subscription_status: "inactive",
       };
@@ -39,8 +38,20 @@ export default function StarterPlan() {
       const emailResult = await base44.integrations.Core.SendEmail({
         from_name: "Smart Content Solutions Website",
         to: "support@smartcontentsolutions.co.uk",
-        subject: `New Starter Plan Order from ${data.customer_name}`,
-        body: `New Starter Plan order received!\n\nPackage: Starter Plan (£49/month)\n\nCustomer Details:\nName: ${data.customer_name}\nBusiness: ${data.business_name}\nEmail: ${data.customer_email}\n\nAdditional Notes:\n${data.notes || 'None'}\n\nPlease contact the customer within 24 hours to complete the setup.`
+        subject: `New Pro Plan Order from ${data.customer_name}`,
+        body: `New Pro Plan order received!
+
+          Package: Pro Plan (£99/month)
+          
+          Customer Details:
+          Name: ${data.customer_name}
+          Business: ${data.business_name}
+          Email: ${data.customer_email}
+          
+          Additional Notes:
+          ${data.notes || 'None'}
+          
+          Please contact the customer within 24 hours to complete the setup.`
       });
       
       return { orderResult, emailResult };
@@ -50,13 +61,13 @@ export default function StarterPlan() {
         setShowForm(false);
         setTimeout(() => {
           setIsSubmitted(true);
-        }, 300);
-      }, 1000);
+        }, 300); // Small delay to allow fade out to start
+      }, 1000); // Delay for form fade-out transition
       setFormData({ customer_name: "", business_name: "", customer_email: "", notes: "" });
     },
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     submitOrderMutation.mutate(formData);
   };
@@ -72,61 +83,76 @@ export default function StarterPlan() {
   const features = [
     {
       icon: FileText,
-      title: "2 AI-Generated Blog Posts per Week",
-      description: "Professionally written, SEO-optimized content tailored to your brand voice and industry keywords"
+      title: "4 AI-Generated Blog Posts per Week",
+      description: "Fully optimized, high-quality content that maintains your unique brand tone and drives engagement"
     },
     {
-      icon: Calendar,
-      title: "Monthly Content Calendar",
-      description: "Automatically created based on your business goals, seasonal trends, and audience interests"
+      icon: Share2,
+      title: "Social Media Content Automation",
+      description: "Automated posts for Facebook, LinkedIn, and Instagram with platform-specific optimization"
+    },
+    {
+      icon: Zap,
+      title: "Branded AI Prompts & Templates",
+      description: "Custom-trained AI models that perfectly match your brand voice and messaging style"
     },
     {
       icon: BarChart3,
-      title: "Automatic Website Posting",
-      description: "Content published directly to your website with optimized headlines, tags, and summaries for SEO"
+      title: "Monthly Content Analytics Report",
+      description: "Detailed insights on engagement, reach, and performance across all your content channels"
     },
     {
-      icon: Mail,
-      title: "Monthly Performance Summary",
-      description: "Detailed report delivered to your inbox showing content performance and engagement metrics"
+      icon: Target,
+      title: "Automated Keyword Optimization",
+      description: "SEO tagging and keyword integration to boost your search engine rankings"
+    },
+    {
+      icon: Award,
+      title: "Priority Support & Monthly Review",
+      description: "Dedicated support team and monthly optimization sessions to maximize your results"
     },
   ];
 
   const includedItems = [
-    "AI-optimized headlines and meta descriptions",
-    "Keyword research and SEO optimization",
+    "4 blog posts per week (16+ per month)",
+    "Social media automation (3 platforms)",
     "Custom brand voice training",
-    "Automatic posting to your website",
-    "Email support for setup and adjustments",
-    "No long-term contracts",
-    "Cancel anytime"
+    "Weekly performance reports",
+    "Priority email support",
+    "Content calendar planning",
+    "SEO optimization & keyword research",
+    "Monthly strategy review call",
+    "Content topic suggestions",
+    "Performance analytics dashboard",
+    "Cancel anytime - no contracts"
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Hero Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-green-100 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">
-                Perfect for Small Businesses
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-full mb-6">
+              <Star className="w-4 h-4" />
+              <span className="text-sm font-semibold">
+                Most Popular Choice
               </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Starter Plan
+              Pro Plan
             </h1>
             <p className="text-2xl text-gray-600 mb-4">
-              Smart Content Automation for Small Businesses
+              Full-Scale Content & Social Automation
             </p>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Perfect for small businesses that want to start automating their online 
-              presence quickly and affordably
+              For growing businesses ready to automate more channels, publish more often, 
+              and receive complete AI content management
             </p>
 
             <div className="inline-flex items-baseline gap-2 mb-8">
-              <span className="text-6xl font-bold gradient-text">£49</span>
+              <span className="text-6xl font-bold gradient-text">£99</span>
               <span className="text-2xl text-gray-600">/month</span>
             </div>
 
@@ -136,7 +162,7 @@ export default function StarterPlan() {
                 onClick={scrollToForm}
                 className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white text-xl px-12 py-8 group"
               >
-                Get Started with Starter Plan
+                Get Started with Pro Plan
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
@@ -148,6 +174,7 @@ export default function StarterPlan() {
         </div>
       </section>
 
+      {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -155,11 +182,11 @@ export default function StarterPlan() {
               What's Included
             </h2>
             <p className="text-xl text-gray-600">
-              Everything you need to automate your content creation
+              Everything you need for complete content automation
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {features.map((feature, index) => (
               <Card
                 key={index}
@@ -200,14 +227,94 @@ export default function StarterPlan() {
         </div>
       </section>
 
+      {/* Comparison with Starter */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              Why Choose Pro Over Starter?
+            </h2>
+            <p className="text-xl text-gray-600">
+              More content, more platforms, more results
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="shadow-xl">
+              <CardHeader className="bg-gray-50 border-b">
+                <h3 className="text-xl font-bold text-gray-900">Starter Plan</h3>
+                <p className="text-gray-600">£49/month</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-600">✓ 2 blog posts/week</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-600">✓ Basic scheduling</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-600">✓ Monthly reports</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-600">✓ Email support</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-xl border-2 border-blue-500">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-green-50 border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Pro Plan</h3>
+                    <p className="text-gray-600">£99/month</p>
+                  </div>
+                  <Star className="w-6 h-6 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-semibold">4 blog posts/week (2x more)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-semibold">Social media automation (3 platforms)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-semibold">Weekly analytics + monthly reviews</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-semibold">Priority support + strategy calls</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-semibold">Custom brand voice training</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-semibold">Advanced SEO optimization</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Best For Section */}
+      <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
             Perfect For
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Small business owners and local companies who want to maintain a consistent 
-            blog presence without hiring a content team
+            Established businesses, agencies, or marketing teams that need regular 
+            high-quality content across multiple platforms
           </p>
 
           <Card className="text-left shadow-xl">
@@ -217,10 +324,10 @@ export default function StarterPlan() {
                   <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
                   <div>
                     <h4 className="font-semibold text-lg text-gray-900 mb-1">
-                      Local Service Businesses
+                      Growing Businesses
                     </h4>
                     <p className="text-gray-600">
-                      Tradespeople, consultants, and service providers who need consistent online content
+                      Companies scaling their marketing efforts and need consistent multi-channel presence
                     </p>
                   </div>
                 </div>
@@ -228,10 +335,10 @@ export default function StarterPlan() {
                   <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
                   <div>
                     <h4 className="font-semibold text-lg text-gray-900 mb-1">
-                      Startups & Solo Entrepreneurs
+                      Marketing Agencies
                     </h4>
                     <p className="text-gray-600">
-                      Business owners who need to establish credibility without spending hours on content
+                      Agencies managing multiple clients who need reliable, scalable content production
                     </p>
                   </div>
                 </div>
@@ -239,10 +346,10 @@ export default function StarterPlan() {
                   <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
                   <div>
                     <h4 className="font-semibold text-lg text-gray-900 mb-1">
-                      E-commerce Stores
+                      E-commerce & Online Brands
                     </h4>
                     <p className="text-gray-600">
-                      Online retailers looking to improve SEO and drive organic traffic
+                      Online businesses that need to maintain active social presence and SEO content
                     </p>
                   </div>
                 </div>
@@ -252,14 +359,15 @@ export default function StarterPlan() {
         </div>
       </section>
 
-      <section ref={formRef} className="py-20 bg-white scroll-mt-20">
+      {/* Order Form Section */}
+      <section ref={formRef} className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 scroll-mt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Ready to Get Started?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-2">
-              You've selected the <span className="font-bold gradient-text">Starter Plan (£49 / month)</span>
+              You've selected the <span className="font-bold gradient-text">Pro Plan (£99 / month)</span>
             </p>
             <p className="text-lg text-gray-600">
               Fill in your details below and we'll contact you within 24 hours to complete setup.
@@ -345,7 +453,7 @@ export default function StarterPlan() {
                         type="submit"
                         size="lg"
                         disabled={submitOrderMutation.isPending}
-                        className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white text-xl py-8 group"
+                        className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white text-xl py-8 group relative overflow-hidden"
                       >
                         {submitOrderMutation.isPending ? (
                           <span className="flex items-center justify-center">

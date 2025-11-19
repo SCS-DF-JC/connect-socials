@@ -1,7 +1,5 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -224,6 +222,7 @@ export default function Services() {
                     </p>
                   </CardContent>
                 </Card>
+
                 {index < process.length - 1 && (
                   <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
                     <ArrowRight className="w-8 h-8 text-blue-300" />
@@ -288,15 +287,15 @@ export default function Services() {
             <div className="relative">
               <div className="relative z-10 bg-gradient-to-br from-blue-500 to-green-500 rounded-3xl p-8 text-white shadow-2xl">
                 <MessageSquare className="w-16 h-16 mb-6 opacity-90" />
-                <h3 className="text-2xl font-bold mb-4">
-                  Always in Control
-                </h3>
+                <h3 className="text-2xl font-bold mb-4">Always in Control</h3>
                 <p className="text-blue-50 mb-6">
                   While we automate the heavy lifting, you maintain full control
                   over your content. Review, edit, or approve everything before it
                   goes live.
                 </p>
-                <Link to={createPageUrl("Contact")}>
+
+                {/* FIXED LINK */}
+                <Link to="/contact">
                   <Button
                     size="lg"
                     className="bg-white text-blue-600 hover:bg-gray-100"
@@ -320,8 +319,10 @@ export default function Services() {
           <p className="text-xl text-blue-50 mb-8">
             Choose a package that fits your needs or request a custom solution
           </p>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to={createPageUrl("Packages")}>
+            {/* FIXED LINK */}
+            <Link to="/packages">
               <Button
                 size="lg"
                 className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6"
@@ -329,7 +330,9 @@ export default function Services() {
                 View Packages
               </Button>
             </Link>
-            <Link to={createPageUrl("Contact")}>
+
+            {/* FIXED LINK */}
+            <Link to="/contact">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white border-2 border-white text-lg px-8 py-6 group"

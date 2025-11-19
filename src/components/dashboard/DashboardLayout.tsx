@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-// import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
@@ -16,13 +14,20 @@ import {
   Home,
 } from "lucide-react";
 
+// 🔥 TEMP: FRONTEND-ONLY LOGOUT
+function fakeLogout() {
+  alert("Logged out (frontend simulation).\nNo backend connected.");
+  window.location.href = "/";
+}
+
+// 🔥 TEMP: createPageUrl helper (remove when you add real logic)
+function createPageUrl(page) {
+  return "/" + page;
+}
+
 export default function DashboardLayout({ children, user }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-
-  const handleLogout = () => {
-    base44.auth.logout(createPageUrl("Home"));
-  };
 
   const navItems = [
     { name: "Dashboard", path: "Dashboard", icon: LayoutDashboard },
@@ -77,26 +82,18 @@ export default function DashboardLayout({ children, user }) {
                 <span className="text-xs text-gray-500">Dashboard</span>
               </div>
             </div>
+
+            {/* User Summary */}
             <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-3">
               <div className="text-sm font-semibold text-gray-900">
-                {user?.full_name || "User"}
+                {user?.full_name || "Demo User"}
               </div>
-              <div className="text-xs text-gray-600">{user?.email}</div>
+              <div className="text-xs text-gray-600">{user?.email || "demo@example.com"}</div>
               <div className="mt-2">
                 <span
-                  className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                    user?.subscription_plan === "pro"
-                      ? "bg-gradient-to-r from-blue-500 to-green-500 text-white"
-                      : user?.subscription_plan === "starter"
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
+                  className="inline-block px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"
                 >
-                  {user?.subscription_plan === "pro"
-                    ? "Pro Plan"
-                    : user?.subscription_plan === "starter"
-                    ? "Starter Plan"
-                    : "No Plan"}
+                  {user?.subscription_plan || "No Plan"}
                 </span>
               </div>
             </div>
@@ -131,8 +128,9 @@ export default function DashboardLayout({ children, user }) {
               <Home className="w-5 h-5" />
               <span className="font-medium">Back to Website</span>
             </Link>
+
             <Button
-              onClick={handleLogout}
+              onClick={fakeLogout}
               variant="outline"
               className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
             >

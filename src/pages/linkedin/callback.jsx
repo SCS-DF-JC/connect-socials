@@ -20,10 +20,11 @@ export default function LinkedInCallback() {
 
         setStatus("LinkedIn connected! Redirecting...");
 
-        // Redirect after 1 second
+        // ⭐ REDIRECT DIRECTLY TO CREATE POST
         setTimeout(() => {
-          navigate("/"); // or /dashboard or wherever your UI goes
-        }, 1000);
+          navigate("/linkedin/create-post"); 
+        }, 800);
+
       } catch (err) {
         console.error(err);
         setStatus("Authentication failed. Please try again.");
