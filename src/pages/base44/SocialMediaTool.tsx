@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+
 import {
   CheckCircle,
   Upload,
@@ -26,9 +27,6 @@ import {
   Cloud
 } from "lucide-react";
 
-import LockedToolOverlay from "@/components/dashboard/LockedToolOverlay";
-
-// GET LINKEDIN AUTH (if any)
 import { getLinkedInAuthData } from "@/utils/linkedinOAuth";
 
 type Platform = {
@@ -42,9 +40,8 @@ type Platform = {
 const ALL_PLATFORMS: Platform[] = [
   { id: "facebook", name: "Facebook", icon: Facebook, color: "text-blue-600", bgColor: "bg-blue-50" },
   { id: "instagram", name: "Instagram", icon: Instagram, color: "text-pink-600", bgColor: "bg-pink-50" },
-  { id: "x", name: "X(Twitter)", icon: Twitter, color: "text-gray-900", bgColor: "bg-gray-50" },
+  { id: "x", name: "X (Twitter)", icon: Twitter, color: "text-gray-900", bgColor: "bg-gray-50" },
 
-  // REAL LINKEDIN
   { id: "linkedin", name: "LinkedIn", icon: Linkedin, color: "text-blue-700", bgColor: "bg-blue-50" },
 
   { id: "tiktok", name: "TikTok", icon: Music, color: "text-gray-900", bgColor: "bg-gray-50" },
@@ -58,7 +55,6 @@ const ALL_PLATFORMS: Platform[] = [
 ];
 
 export default function SocialMediaTool(): JSX.Element {
-
   const navigate = useNavigate();
   const { user, isSignedIn, isLoaded } = useUser();
 
@@ -78,9 +74,23 @@ export default function SocialMediaTool(): JSX.Element {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // -------------------------------------------------------------------
-  // IMAGE UPLOAD HANDLER
-  // -------------------------------------------------------------------
+  // CONNECTED PLATFORM DETECTION
+  const CONNECTED = {
+    linkedin: !!linkedin,
+    facebook: false,
+    instagram: false,
+    x: false,
+    tiktok: false,
+    pinterest: false,
+    youtube: false,
+    google_business: false,
+    reddit: false,
+    medium: false,
+    threads: false,
+    mastodon: false
+  };
+
+  // IMAGE UPLOAD
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) {
@@ -91,26 +101,27 @@ export default function SocialMediaTool(): JSX.Element {
     }
   };
 
+  // BLOCK DISCONNECTED PLATFORMS
   const togglePlatform = (id: string) => {
-    setSelectedPlatforms((prev) =>
-      prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id]
-    );
-  };
-
-  // -------------------------------------------------------------------
-  // ⭐ BACKEND POST INTEGRATION (from CreatePost.tsx)
-  // -------------------------------------------------------------------
-  const sendToBackend = async () => {
-    if (!isSignedIn || !user?.id) {
-      setErrorMsg("You must be logged in to post.");
+    if (!CONNECTED[id]) {
+      setErrorMsg(`${ALL_PLATFORMS.find((p) => p.id === id)?.name} is not connected. Please connect first.`);
       return;
     }
 
-    // Require LinkedIn when selected
+    setSelectedPlatforms((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  // BACKEND INTEGRATION
+  const sendToBackend = async () => {
+    if (!isSignedIn || !user?.id) {
+      setErrorMsg("Login required.");
+      return;
+    }
+
     if (selectedPlatforms.includes("linkedin") && !linkedin) {
-      setErrorMsg("You must connect LinkedIn before posting to LinkedIn.");
+      setErrorMsg("You must connect LinkedIn before posting.");
       return;
     }
 
@@ -118,10 +129,7 @@ export default function SocialMediaTool(): JSX.Element {
     form.append("user_id", user.id);
     form.append("caption", caption);
 
-    // Add selected platforms
-    selectedPlatforms.forEach((p) => {
-      form.append("platforms[]", p);
-    });
+    selectedPlatforms.forEach((p) => form.append("platforms[]", p));
 
     form.append("post_mode", postMode);
     form.append("use_ai", aiEnhance ? "yes" : "no");
@@ -130,33 +138,22 @@ export default function SocialMediaTool(): JSX.Element {
       form.append("scheduled_time", scheduledTime);
     }
 
-    if (imageFile) {
-      form.append("image", imageFile);
-    }
+    if (imageFile) form.append("image", imageFile);
 
     try {
-      const res = await fetch(
-        "https://scs-ltd.app.n8n.cloud/webhook/social-media",
-        {
-          method: "POST",
-          body: form
-        }
-      );
+      const res = await fetch("https://scs-ltd.app.n8n.cloud/webhook/social-media", {
+        method: "POST",
+        body: form
+      });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text);
-      }
+      if (!res.ok) throw new Error(await res.text());
 
-      return await res.json();
+      return res.json();
     } catch (err: any) {
       throw new Error(err.message);
     }
   };
 
-  // -------------------------------------------------------------------
-  // PUBLISH FUNCTION
-  // -------------------------------------------------------------------
   const handlePublish = async () => {
     setErrorMsg(null);
 
@@ -165,7 +162,7 @@ export default function SocialMediaTool(): JSX.Element {
       return;
     }
     if (selectedPlatforms.length === 0) {
-      setErrorMsg("Select at least 1 platform.");
+      setErrorMsg("Select at least one connected platform.");
       return;
     }
 
@@ -173,7 +170,6 @@ export default function SocialMediaTool(): JSX.Element {
     try {
       await sendToBackend();
 
-      // Reset form
       setIsSuccess(true);
       setCaption("");
       setImagePreview(null);
@@ -184,19 +180,18 @@ export default function SocialMediaTool(): JSX.Element {
     } catch (err: any) {
       setErrorMsg(err.message);
     }
-
     setLoading(false);
   };
 
-  // If Clerk still loading
+  // LOADING STATE
   if (!isLoaded) {
     return <div className="min-h-screen flex items-center justify-center text-gray-600">Loading user…</div>;
   }
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-50">
-        <div className="bg-white shadow-xl p-8">Login required.</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 shadow-xl rounded-lg">Login required.</div>
       </div>
     );
   }
@@ -205,6 +200,7 @@ export default function SocialMediaTool(): JSX.Element {
     <div className="min-h-screen p-6 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="max-w-5xl mx-auto">
 
+        {/* SUCCESS */}
         {isSuccess && (
           <Card className="mb-6">
             <CardContent className="p-4 flex items-center gap-4">
@@ -217,6 +213,7 @@ export default function SocialMediaTool(): JSX.Element {
           </Card>
         )}
 
+        {/* ERROR */}
         {errorMsg && (
           <div className="p-4 mb-4 text-sm bg-red-100 text-red-700 border border-red-300 rounded">
             {errorMsg}
@@ -225,27 +222,35 @@ export default function SocialMediaTool(): JSX.Element {
 
         <h1 className="text-3xl font-bold mb-4">Social Media Manager</h1>
 
-        {/* PLATFORM SELECTION */}
+        {/* PLATFORM SELECT */}
         <Card className="mb-6">
           <CardHeader className="border-b p-4">
             <h2 className="text-lg font-bold">Choose Platforms</h2>
           </CardHeader>
           <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
             {ALL_PLATFORMS.map((p) => {
               const isSelected = selectedPlatforms.includes(p.id);
+              const isConnected = CONNECTED[p.id];
+
               return (
                 <button
                   key={p.id}
+                  disabled={!isConnected}
                   onClick={() => togglePlatform(p.id)}
-                  className={`p-3 rounded-xl border ${
-                    isSelected ? "scale-105 bg-white shadow-lg" : "bg-white/90 hover:shadow-sm"
+                  className={`p-3 rounded-xl border transition ${
+                    !isConnected
+                      ? "opacity-50 cursor-not-allowed bg-gray-100"
+                      : isSelected
+                      ? "scale-105 bg-white shadow-lg"
+                      : "bg-white/90 hover:shadow-sm"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`${p.bgColor} w-10 h-10 rounded-lg flex items-center justify-center`}>
                       <p.icon className={`w-5 h-5 ${p.color}`} />
                     </div>
-                    <div className="text-left flex-1">
+                    <div className="flex-1 text-left">
                       <div className="font-semibold text-sm">{p.name}</div>
                     </div>
                     {isSelected && <CheckCircle className="w-4 h-4 text-green-600" />}
@@ -253,6 +258,7 @@ export default function SocialMediaTool(): JSX.Element {
                 </button>
               );
             })}
+
           </CardContent>
         </Card>
 
@@ -263,6 +269,8 @@ export default function SocialMediaTool(): JSX.Element {
           </CardHeader>
 
           <CardContent className="p-6 space-y-4">
+
+            {/* CAPTION */}
             <div>
               <Label>Caption *</Label>
               <Textarea
@@ -273,25 +281,22 @@ export default function SocialMediaTool(): JSX.Element {
               />
             </div>
 
-            {/* AI Enhancement Toggle */}
-<div className="flex items-center justify-between py-2">
-  <Label className="text-gray-700 font-medium">AI Enhancement</Label>
+            {/* AI ENHANCEMENT */}
+            <div className="flex items-center justify-between py-2">
+              <Label className="text-gray-700 font-medium">AI Enhancement</Label>
 
-  <div className="flex items-center gap-3">
-    <span className="text-sm text-gray-600">
-      {aiEnhance ? "Enabled" : "Disabled"}
-    </span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600">
+                  {aiEnhance ? "Enabled" : "Disabled"}
+                </span>
 
-    <Switch
-      checked={aiEnhance}
-      onCheckedChange={(state) => setAiEnhance(state)}
-    />
-  </div>
-</div>
+                <Switch checked={aiEnhance} onCheckedChange={setAiEnhance} />
+              </div>
+            </div>
 
-
+            {/* IMAGE UPLOAD */}
             <div>
-              <Label>Optional image</Label>
+              <Label>Optional Image</Label>
               <div className="border-2 border-dashed p-4 rounded">
                 {imagePreview ? (
                   <div className="relative inline-block">
@@ -321,7 +326,7 @@ export default function SocialMediaTool(): JSX.Element {
               </div>
             </div>
 
-            {/* Posting mode */}
+            {/* POST MODE */}
             <div>
               <Label>Posting Mode</Label>
               <select
