@@ -1,16 +1,11 @@
 import React from "react";
-
-// UI Components
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
-
-// External Libraries
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 
-// Pages
 import Layout from "./pages/base44/Layout";
 import Home from "./pages/base44/Home";
 import About from "./pages/base44/About";
@@ -35,25 +30,19 @@ import CreatePost from "./pages/linkedin/create-post";
 
 import NotFound from "./pages/NotFound";
 
-// *** FIXED Login & Signup imports ***
 import Login from "./pages/base44/Login";
 import SignupPage from "./pages/base44/Signup";
 
 const queryClient = new QueryClient();
 
-/* Protected Route */
 const ProtectedRoute = ({ children }) => {
   const { isSignedIn, isLoaded } = useUser();
-
-  if (!isLoaded) {
+  if (!isLoaded)
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-xl font-semibold text-indigo-600 animate-pulse p-4 bg-white rounded-lg shadow-xl">
-          Authenticating...
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
       </div>
     );
-  }
 
   return isSignedIn ? children : <Navigate to="/login" replace />;
 };
@@ -63,11 +52,10 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-
       <BrowserRouter>
         <Routes>
 
-          {/* PUBLIC PAGES */}
+          {/* Public */}
           <Route path="/" element={<Layout><Home /></Layout>} />
           <Route path="/home" element={<Layout><Home /></Layout>} />
           <Route path="/about" element={<Layout><About /></Layout>} />
@@ -80,26 +68,23 @@ const App = () => (
           <Route path="/pro" element={<Layout><ProPlan /></Layout>} />
           <Route path="/checkout" element={<Layout><StripeCheckout /></Layout>} />
 
-          {/* FIXED AUTH ROUTES */}
+          {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/sign-up/*" element={<SignupPage />} />
 
-          {/* PROTECTED DASHBOARD */}
+          {/* Dashboard */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/social-posts" element={<ProtectedRoute><SocialMediaTool /></ProtectedRoute>} />
-<Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignTool /></ProtectedRoute>} />
-<Route path="/analytics" element={<ProtectedRoute><AnalyticsTool /></ProtectedRoute>} />
-<Route path="/leads-calls" element={<ProtectedRoute><LeadsTool /></ProtectedRoute>} />
-<Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+          <Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignTool /></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><AnalyticsTool /></ProtectedRoute>} />
+          <Route path="/leads-calls" element={<ProtectedRoute><LeadsTool /></ProtectedRoute>} />
+          <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
 
-
-          {/* LINKEDIN */}
+          {/* LinkedIn */}
           <Route path="/linkedin/callback" element={<ProtectedRoute><LinkedInCallback /></ProtectedRoute>} />
           <Route path="/linkedin/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
 
-          {/* NOT FOUND */}
           <Route path="*" element={<NotFound />} />
-
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

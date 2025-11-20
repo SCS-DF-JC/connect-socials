@@ -16,7 +16,6 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-// ⭐ Clerk
 import {
   SignedIn,
   SignedOut,
@@ -34,7 +33,6 @@ export default function Layout({ children }) {
   const { user } = useUser();
   const location = useLocation();
 
-  // Navigation links
   const navItems = [
     { name: "Home", path: "/home" },
     { name: "About", path: "/about" },
@@ -45,23 +43,22 @@ export default function Layout({ children }) {
     { name: "Contact", path: "/contact" },
   ];
 
+  // ⭐ FIXED ROUTES (MATCH APP.TSX NOW)
   const sidebarItems = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { name: "Social Posts", path: "/social", icon: Share2 },
-    { name: "Email Campaigns", path: "/email", icon: Mail },
+    { name: "Social Posts", path: "/social-posts", icon: Share2 },
+    { name: "Email Campaigns", path: "/email-campaigns", icon: Mail },
     { name: "Analytics", path: "/analytics", icon: BarChart3 },
-    { name: "Leads & Calls", path: "/leads", icon: Phone },
-    { name: "Account Settings", path: "/settings", icon: Settings },
+    { name: "Leads & Calls", path: "/leads-calls", icon: Phone },
+    { name: "Account Settings", path: "/account-settings", icon: Settings },
   ];
 
-  // Close menus on route change
   useEffect(() => {
     setMenuOpen(false);
     setSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
 
-  // Scroll detection for navbar hide effect
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
@@ -79,8 +76,6 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
-      {/* SIDEBAR BUTTON */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="fixed top-4 left-4 z-50 w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white"
@@ -97,7 +92,7 @@ export default function Layout({ children }) {
       >
         <div className="h-full flex flex-col text-white overflow-y-auto">
 
-          {/* SIDEBAR HEADER */}
+          {/* HEADER */}
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center gap-3 mb-4">
               <img
@@ -143,7 +138,7 @@ export default function Layout({ children }) {
             </SignedIn>
           </div>
 
-          {/* PUBLIC PAGES */}
+          {/* PUBLIC NAV */}
           <nav className="flex-1 p-4 space-y-4">
             <div>
               <p className="text-xs text-white/70 uppercase mb-2 px-3">
@@ -167,7 +162,7 @@ export default function Layout({ children }) {
               ))}
             </div>
 
-            {/* CLIENT TOOLS (Signed In Only) */}
+            {/* DASHBOARD NAV */}
             <SignedIn>
               <div className="mt-4">
                 <p className="text-xs text-white/70 uppercase mb-2 px-3">
@@ -198,7 +193,6 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      {/* OVERLAY */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-[30]"
@@ -206,7 +200,7 @@ export default function Layout({ children }) {
         />
       )}
 
-      {/* TOP NAVBAR */}
+      {/* TOP NAV */}
       <header
         className={`fixed top-0 left-0 right-0 z-30 transition-transform duration-300
           ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}
@@ -216,27 +210,21 @@ export default function Layout({ children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
 
-            {/* LOGO + BRAND */}
-<Link to="/home" className="flex items-center gap-3 ml-16"> {/* Added ml-16 here */}
+            <Link to="/home" className="flex items-center gap-3 ml-16">
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_68b073eda37c031e7cfdae1c/ffd16f891_logo.jpg"
+                className="h-12 w-12 rounded object-contain shadow"
+              />
+              <div className="leading-tight">
+                <span className="font-bold text-2xl bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                  Smart Content
+                </span>
+                <div className="text-sm text-gray-500 -mt-1">
+                  Solutions
+                </div>
+              </div>
+            </Link>
 
-  {/* LOGO PIC */}
-  <img
-    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_68b073eda37c031e7cfdae1c/ffd16f891_logo.jpg"
-    className="h-12 w-12 rounded object-contain shadow"
-  />
-
-  {/* BRAND NAME */}
-  <div className="leading-tight">
-    <span className="font-bold text-2xl bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
-      Smart Content
-    </span>
-    <div className="text-sm text-gray-500 -mt-1">
-      Solutions
-    </div>
-  </div>
-</Link>
-
-            {/* DESKTOP NAV */}
             <nav className="hidden lg:flex items-center gap-10">
               {navItems.map((item) => (
                 <Link
@@ -253,9 +241,7 @@ export default function Layout({ children }) {
               ))}
             </nav>
 
-            {/* RIGHT SIDE AUTH BUTTONS */}
             <div className="hidden lg:flex items-center gap-4">
-
               <SignedOut>
                 <Link to="/login">
                   <Button className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg flex items-center gap-2">
@@ -272,7 +258,6 @@ export default function Layout({ children }) {
               </SignedIn>
             </div>
 
-            {/* MOBILE MENU BUTTON */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
@@ -282,7 +267,6 @@ export default function Layout({ children }) {
           </div>
         </div>
 
-        {/* MOBILE NAV */}
         <div
           className={`lg:hidden transition-max-h overflow-hidden ${
             menuOpen ? "max-h-96 bg-white border-t" : "max-h-0"
@@ -304,7 +288,6 @@ export default function Layout({ children }) {
               </Link>
             ))}
 
-            {/* MOBILE AUTH */}
             <SignedOut>
               <Link to="/login">
                 <Button className="mt-3 w-full bg-blue-600 text-white">
@@ -319,7 +302,6 @@ export default function Layout({ children }) {
                   Dashboard
                 </Button>
               </Link>
-
               <div className="mt-3">
                 <UserButton afterSignOutUrl="/home" />
               </div>
@@ -328,7 +310,6 @@ export default function Layout({ children }) {
         </div>
       </header>
 
-      {/* MAIN */}
       <main className="pt-24">{children}</main>
     </div>
   );
