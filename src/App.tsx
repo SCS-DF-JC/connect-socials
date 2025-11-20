@@ -8,19 +8,10 @@ import { TooltipProvider } from "./components/ui/tooltip";
 // External Libraries
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, SignIn, SignUp } from "@clerk/clerk-react";
 
-// Auth Pages
-import Login from "./pages/base44/Login";
-
-// Layout Wrapper
+// Base Pages
 import Layout from "./pages/base44/Layout";
-
-// LinkedIn Pages
-import LinkedInCallback from "./pages/linkedin/callback";
-import CreatePost from "./pages/linkedin/create-post";
-
-// Base44 Website Pages
 import Home from "./pages/base44/Home";
 import About from "./pages/base44/About";
 import Services from "./pages/base44/Services";
@@ -32,7 +23,7 @@ import StarterPlan from "./pages/base44/StarterPlan";
 import ProPlan from "./pages/base44/ProPlan";
 import StripeCheckout from "./pages/base44/StripeCheckout";
 
-// Dashboard Pages (Protected)
+// Dashboard Pages
 import Dashboard from "./pages/base44/Dashboard";
 import LeadsTool from "./pages/base44/LeadsTool";
 import SocialMediaTool from "./pages/base44/SocialMediaTool";
@@ -40,9 +31,12 @@ import EmailCampaignTool from "./pages/base44/EmailCampaignTool";
 import AnalyticsTool from "./pages/base44/AnalyticsTool";
 import AccountSettings from "./pages/base44/AccountSettings";
 
+// LinkedIn Pages
+import LinkedInCallback from "./pages/linkedin/callback";
+import CreatePost from "./pages/linkedin/create-post";
+
 // Misc
 import NotFound from "./pages/NotFound";
-import SignupPage from "./pages/base44/Signup";
 
 const queryClient = new QueryClient();
 
@@ -62,9 +56,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (isSignedIn) return children;
-
-  return <Navigate to="/login" replace />;
+  return isSignedIn ? children : <Navigate to="/login" replace />;
 };
 
 const App = () => (
@@ -76,7 +68,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
 
-          {/* Public Website */}
+          {/* PUBLIC WEBSITE */}
           <Route path="/" element={<Layout><Home /></Layout>} />
           <Route path="/home" element={<Layout><Home /></Layout>} />
           <Route path="/about" element={<Layout><About /></Layout>} />
@@ -89,13 +81,18 @@ const App = () => (
           <Route path="/pro" element={<Layout><ProPlan /></Layout>} />
           <Route path="/checkout" element={<Layout><StripeCheckout /></Layout>} />
 
-          {/* Auth */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/login/sso-callback" element={<Login />} />
-          <Route path="/sign-up" element={<SignupPage />} />
+          {/* AUTH ROUTES — FIXED */}
+          <Route
+            path="/login"
+            element={<SignIn routing="path" signUpUrl="/sign-up" />}
+          />
 
+          <Route
+            path="/sign-up/*"
+            element={<SignUp routing="path" signInUrl="/login" />}
+          />
 
-          {/* Dashboard (Protected) */}
+          {/* DASHBOARD (PROTECTED) */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/leads" element={<ProtectedRoute><LeadsTool /></ProtectedRoute>} />
           <Route path="/social" element={<ProtectedRoute><SocialMediaTool /></ProtectedRoute>} />
@@ -103,19 +100,18 @@ const App = () => (
           <Route path="/analytics" element={<ProtectedRoute><AnalyticsTool /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
 
-          {/* LinkedIn */}
+          {/* LINKEDIN (PROTECTED) */}
           <Route
-  path="/linkedin/callback"
-  element={<ProtectedRoute><LinkedInCallback /></ProtectedRoute>}
-/>
+            path="/linkedin/callback"
+            element={<ProtectedRoute><LinkedInCallback /></ProtectedRoute>}
+          />
 
           <Route
-  path="/linkedin/create-post"
-  element={<ProtectedRoute><CreatePost /></ProtectedRoute>}
-/>
+            path="/linkedin/create-post"
+            element={<ProtectedRoute><CreatePost /></ProtectedRoute>}
+          />
 
-
-          {/* 404 */}
+          {/* FALLBACK */}
           <Route path="*" element={<NotFound />} />
 
         </Routes>

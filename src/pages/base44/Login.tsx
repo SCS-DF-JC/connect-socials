@@ -1,3 +1,4 @@
+import React from "react";
 import { SignIn } from "@clerk/clerk-react";
 
 export default function Login() {
@@ -16,10 +17,12 @@ export default function Login() {
             socialButtonsVariant: "iconButton", // icon only
           },
         }}
-        // Only GOOGLE
-        afterSignInUrl="/dashboard"
-        afterSignUpUrl="/dashboard"
-        preferredSignInStrategy="oauth_google"
+        // Use Clerk's recommended redirect prop(s)
+        // fallbackRedirectUrl is used when a redirect target isn't otherwise present.
+        // You can also use `forceRedirectUrl` if you always want to force a destination.
+        fallbackRedirectUrl="/dashboard"
+        // If you prefer to *always* redirect to dashboard after sign-in/up:
+        // forceRedirectUrl="/dashboard"
       />
     </div>
   );
