@@ -86,11 +86,12 @@ const App = () => (
 
           {/* PROTECTED DASHBOARD */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/leads" element={<ProtectedRoute><LeadsTool /></ProtectedRoute>} />
-          <Route path="/social" element={<ProtectedRoute><SocialMediaTool /></ProtectedRoute>} />
-          <Route path="/email" element={<ProtectedRoute><EmailCampaignTool /></ProtectedRoute>} />
-          <Route path="/analytics" element={<ProtectedRoute><AnalyticsTool /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+          <Route path="/social-posts" element={<ProtectedRoute><SocialMediaTool /></ProtectedRoute>} />
+<Route path="/email-campaigns" element={<ProtectedRoute><EmailCampaignTool /></ProtectedRoute>} />
+<Route path="/analytics" element={<ProtectedRoute><AnalyticsTool /></ProtectedRoute>} />
+<Route path="/leads-calls" element={<ProtectedRoute><LeadsTool /></ProtectedRoute>} />
+<Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+
 
           {/* LINKEDIN */}
           <Route path="/linkedin/callback" element={<ProtectedRoute><LinkedInCallback /></ProtectedRoute>} />
