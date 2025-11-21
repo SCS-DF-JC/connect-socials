@@ -27,7 +27,8 @@ const N8N_URL = import.meta.env.VITE_N8N_WEBHOOK_URL;
 const FACEBOOK_CLIENT_ID = import.meta.env.VITE_FACEBOOK_CLIENT_ID;
 
 // FINAL redirect (frontend)
-const REDIRECT_URI = "https://www.smartcontentsolutions.co.uk/facebook-direct-callback";
+const REDIRECT_URI = "https://www.smartcontentsolutions.co.uk/facebook/callback";
+
 
 // Generate random state
 function generateState(length = 32) {
