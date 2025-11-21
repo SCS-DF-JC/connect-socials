@@ -2,12 +2,16 @@
 import { useEffect, useState } from "react";
 import { completeFacebookAuth } from "@/utils/facebookOAuth";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 
 export default function FacebookCallback() {
   const [status, setStatus] = useState("Connecting your Facebook account...");
   const navigate = useNavigate();
+  const { isLoaded } = useUser(); // ⭐ WAIT FOR CLERK
 
   useEffect(() => {
+    if (!isLoaded) return; // ⭐ DO NOT RUN UNTIL CLERK IS READY
+
     async function finishAuth() {
       try {
         setStatus("Completing Facebook authentication...");
@@ -20,11 +24,7 @@ export default function FacebookCallback() {
         }
 
         setStatus("Facebook connected! Redirecting...");
-
-        // Redirect to dashboard or post creation UI
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 800);
+        setTimeout(() => navigate("/dashboard"), 800);
       } catch (err) {
         console.error(err);
         setStatus("Authentication failed. Please try again.");
@@ -32,7 +32,7 @@ export default function FacebookCallback() {
     }
 
     finishAuth();
-  }, []);
+  }, [isLoaded]); // ⭐ RUN ONLY AFTER CLERK LOADS
 
   return (
     <div className="flex flex-col items-center justify-center h-screen p-4 text-center">
