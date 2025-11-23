@@ -2,13 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-
 import {
   CheckCircle,
   Upload,
@@ -26,7 +24,6 @@ import {
   AtSign,
   Cloud
 } from "lucide-react";
-
 import { getLinkedInAuthData } from "@/utils/linkedinOAuth";
 import { getFacebookAuthData } from "@/utils/facebookOAuth";
 import { getInstagramAuthData } from "@/utils/instagramOAuth";
@@ -40,16 +37,16 @@ type Platform = {
 };
 
 type LinkedInEntity = {
-  urn: string; // urn:li:person:... or urn:li:organization:...
-  id: string; // numeric id for org or person id
+  urn: string;
+  id: string;
   name: string;
   logo?: string | null;
   type: "person" | "organization";
 };
 
 type InstagramEntity = {
-  key: string; // e.g. instagram:business:{ig_id} or instagram:page:{page_id}
-  id: string; // ig id or page id
+  key: string;
+  id: string;
   name: string;
   type: "business" | "page";
   logo?: string | null;
@@ -60,6 +57,7 @@ const ALL_PLATFORMS: Platform[] = [
   { id: "instagram", name: "Instagram", icon: Instagram, color: "text-pink-600", bgColor: "bg-pink-50" },
   { id: "x", name: "X (Twitter)", icon: Twitter, color: "text-gray-900", bgColor: "bg-gray-50" },
   { id: "linkedin", name: "LinkedIn", icon: Linkedin, color: "text-blue-700", bgColor: "bg-blue-50" },
+  { id: "bluesky", name: "Bluesky", icon: Cloud, color: "text-sky-600", bgColor: "bg-sky-50" },
   { id: "tiktok", name: "TikTok", icon: Music, color: "text-gray-900", bgColor: "bg-gray-50" },
   { id: "pinterest", name: "Pinterest", icon: Pin, color: "text-red-600", bgColor: "bg-red-50" },
   { id: "youtube", name: "YouTube", icon: Youtube, color: "text-red-600", bgColor: "bg-red-50" },
@@ -70,8 +68,6 @@ const ALL_PLATFORMS: Platform[] = [
   { id: "mastodon", name: "Mastodon", icon: Cloud, color: "text-purple-600", bgColor: "bg-purple-50" }
 ];
 
-// -- SAMPLE uploaded image path (dev/test) --
-// The environment/tooling will transform this local path into an accessible URL during processing.
 const SAMPLE_UPLOADED_IMAGE = "/mnt/data/cb6d4125-4766-4055-964d-b5bbad277921.png";
 
 export default function SocialMediaTool(): JSX.Element {
@@ -96,19 +92,20 @@ export default function SocialMediaTool(): JSX.Element {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // LinkedIn entities (personal + organizations)
   const [linkedinEntities, setLinkedinEntities] = useState<LinkedInEntity[]>([]);
   const [showLinkedinEntities, setShowLinkedinEntities] = useState(true);
 
-  // Instagram entities (business account + connected pages)
   const [instagramEntities, setInstagramEntities] = useState<InstagramEntity[]>([]);
   const [showInstagramEntities, setShowInstagramEntities] = useState(true);
 
-  // CONNECTED PLATFORM DETECTION
+  const [blueskyUsername, setBlueskyUsername] = useState("");
+  const [blueskyPassword, setBlueskyPassword] = useState("");
+
   const CONNECTED = {
     linkedin: !!linkedin,
     facebook: !!facebook,
     instagram: !!instagram,
+    bluesky: true,
     x: false,
     tiktok: false,
     pinterest: false,
@@ -120,15 +117,12 @@ export default function SocialMediaTool(): JSX.Element {
     mastodon: false
   };
 
-  // Populate LinkedIn entities from saved auth data
   useEffect(() => {
     if (!linkedin) {
       setLinkedinEntities([]);
       return;
     }
-
     const entities: LinkedInEntity[] = [];
-
     let personUrn = String(linkedin.linkedin_user_id || "");
     if (personUrn && !personUrn.startsWith("urn:li:person:")) {
       personUrn = `urn:li:person:${personUrn}`;
@@ -142,7 +136,6 @@ export default function SocialMediaTool(): JSX.Element {
         type: "person"
       });
     }
-
     const orgs = (linkedin.organizations || linkedin.company_pages || []) as any[];
     if (Array.isArray(orgs)) {
       orgs.forEach((o) => {
@@ -150,7 +143,6 @@ export default function SocialMediaTool(): JSX.Element {
         const id = o.org_id || (urn ? urn.split(":").pop() : "");
         const name = o.name || o.localizedName || `Company ${id}`;
         const logo = o.logo || (o.logoV2 && o.logoV2["original~"]?.elements?.[0]?.identifiers?.[0]?.identifier) || null;
-
         if (urn) {
           entities.push({
             urn,
@@ -162,20 +154,15 @@ export default function SocialMediaTool(): JSX.Element {
         }
       });
     }
-
     setLinkedinEntities(entities);
   }, [linkedin]);
 
-  // Populate Instagram entities from saved auth data
   useEffect(() => {
     if (!instagram) {
       setInstagramEntities([]);
       return;
     }
-
     const items: InstagramEntity[] = [];
-
-    // Primary connected Instagram business account (if provided)
     if (instagram.instagram_user_id) {
       const key = `instagram:business:${instagram.instagram_user_id}`;
       items.push({
@@ -186,8 +173,6 @@ export default function SocialMediaTool(): JSX.Element {
         logo: instagram.picture || null
       });
     }
-
-    // Pages (Facebook pages connected to IG business accounts)
     const pages = instagram.pages || [];
     if (Array.isArray(pages)) {
       pages.forEach((p) => {
@@ -201,11 +186,9 @@ export default function SocialMediaTool(): JSX.Element {
         });
       });
     }
-
     setInstagramEntities(items);
   }, [instagram]);
 
-  // IMAGE UPLOAD
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) {
@@ -216,12 +199,9 @@ export default function SocialMediaTool(): JSX.Element {
     }
   };
 
-  // Helper: whether a given urn or platform id is selected
   const isSelected = (idOrUrn: string) => selectedPlatforms.includes(idOrUrn);
 
-  // BLOCK DISCONNECTED PLATFORMS / SELECT ENTITIES
   const togglePlatform = (id: string) => {
-    // LinkedIn entities (URNs)
     if (id.startsWith("urn:li:")) {
       if (!CONNECTED.linkedin) {
         setErrorMsg("LinkedIn is not connected. Please connect LinkedIn first.");
@@ -230,8 +210,6 @@ export default function SocialMediaTool(): JSX.Element {
       setSelectedPlatforms((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
       return;
     }
-
-    // Instagram entities (instagram:business:... or instagram:page:...)
     if (id.startsWith("instagram:")) {
       if (!CONNECTED.instagram) {
         setErrorMsg("Instagram is not connected. Please connect Instagram first.");
@@ -240,74 +218,57 @@ export default function SocialMediaTool(): JSX.Element {
       setSelectedPlatforms((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
       return;
     }
-
-    // Non-linkedin / non-instagram: block if not connected
-    if (!CONNECTED[id as keyof typeof CONNECTED]) {
-      setErrorMsg(`${ALL_PLATFORMS.find((p) => p.id === id)?.name} is not connected. Please connect first.`);
-      return;
-    }
-
     setSelectedPlatforms((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  // Clear error after a short delay
   useEffect(() => {
     if (!errorMsg) return;
     const t = setTimeout(() => setErrorMsg(null), 5000);
     return () => clearTimeout(t);
   }, [errorMsg]);
 
-  // BACKEND INTEGRATION
   const sendToBackend = async () => {
     if (!isSignedIn || !user?.id) {
       setErrorMsg("Login required.");
       return;
     }
-
     const hasLinkedInSelected = selectedPlatforms.some((p) => p.startsWith("urn:li:"));
     if (hasLinkedInSelected && !linkedin) {
       setErrorMsg("You must connect LinkedIn before posting to LinkedIn.");
       return;
     }
-
     const hasInstagramSelected = selectedPlatforms.some((p) => p.startsWith("instagram:"));
     if (hasInstagramSelected && !instagram) {
       setErrorMsg("You must connect Instagram before posting to Instagram.");
       return;
     }
-
     if (selectedPlatforms.includes("facebook") && !facebook) {
       setErrorMsg("You must connect Facebook before posting to Facebook.");
       return;
     }
-
     const form = new FormData();
     form.append("user_id", user.id);
     form.append("caption", caption);
-
-    // Send platforms[] (URNs for LinkedIn, instagram keys for IG entities, platform ids like 'facebook' for Facebook)
     selectedPlatforms.forEach((p) => form.append("platforms[]", p));
-
+    if (selectedPlatforms.includes("bluesky")) {
+      form.append("bluesky_username", blueskyUsername);
+      form.append("bluesky_password", blueskyPassword);
+    }
     form.append("post_mode", postMode);
     form.append("use_ai", aiEnhance ? "yes" : "no");
-
     if (postMode === "schedule") {
       form.append("scheduled_time", scheduledTime);
     }
-
     if (imageFile) form.append("image", imageFile);
-
     try {
       const res = await fetch("https://scs-ltd.app.n8n.cloud/webhook/social-media", {
         method: "POST",
         body: form
       });
-
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || "Backend error");
       }
-
       return res.json();
     } catch (err: any) {
       throw new Error(err.message || "Network error");
@@ -316,7 +277,6 @@ export default function SocialMediaTool(): JSX.Element {
 
   const handlePublish = async () => {
     setErrorMsg(null);
-
     if (!caption.trim()) {
       setErrorMsg("Caption is required.");
       return;
@@ -325,17 +285,22 @@ export default function SocialMediaTool(): JSX.Element {
       setErrorMsg("Select at least one connected platform.");
       return;
     }
-
+    if (selectedPlatforms.includes("bluesky")) {
+      if (!blueskyUsername.trim() || !blueskyPassword.trim()) {
+        setErrorMsg("Bluesky username and app password are required.");
+        return;
+      }
+    }
     setLoading(true);
     try {
       await sendToBackend();
-
       setIsSuccess(true);
       setCaption("");
       setImagePreview(null);
       setImageFile(null);
       setSelectedPlatforms([]);
-
+      setBlueskyUsername("");
+      setBlueskyPassword("");
       setTimeout(() => setIsSuccess(false), 2000);
     } catch (err: any) {
       setErrorMsg(err.message);
@@ -343,7 +308,6 @@ export default function SocialMediaTool(): JSX.Element {
     setLoading(false);
   };
 
-  // LOADING STATE
   if (!isLoaded) {
     return <div className="min-h-screen flex items-center justify-center text-gray-600">Loading user…</div>;
   }
@@ -359,8 +323,6 @@ export default function SocialMediaTool(): JSX.Element {
   return (
     <div className="min-h-screen p-6 bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="max-w-5xl mx-auto">
-
-        {/* SUCCESS */}
         {isSuccess && (
           <Card className="mb-6">
             <CardContent className="p-4 flex items-center gap-4">
@@ -373,7 +335,6 @@ export default function SocialMediaTool(): JSX.Element {
           </Card>
         )}
 
-        {/* ERROR */}
         {errorMsg && (
           <div className="p-4 mb-4 text-sm bg-red-100 text-red-700 border border-red-300 rounded">
             {errorMsg}
@@ -382,17 +343,14 @@ export default function SocialMediaTool(): JSX.Element {
 
         <h1 className="text-3xl font-bold mb-4">Social Media Manager</h1>
 
-        {/* PLATFORM SELECT */}
         <Card className="mb-6">
           <CardHeader className="border-b p-4">
             <h2 className="text-lg font-bold">Choose Platforms</h2>
           </CardHeader>
           <CardContent className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-
             {ALL_PLATFORMS.map((p) => {
               const basicSelected = isSelected(p.id);
               const isConnected = CONNECTED[p.id as keyof typeof CONNECTED];
-
               if (p.id === "linkedin") {
                 return (
                   <div key={p.id} className={`p-3 rounded-xl border ${!isConnected ? "opacity-50 bg-gray-100" : "bg-white/90 hover:shadow-sm"}`}>
@@ -406,7 +364,6 @@ export default function SocialMediaTool(): JSX.Element {
                           {isConnected ? `${linkedin?.firstName || "Connected"}` : "Not connected"}
                         </div>
                       </div>
-
                       <div className="flex flex-col items-end gap-2">
                         <button
                           onClick={() => setShowLinkedinEntities((s) => !s)}
@@ -421,8 +378,6 @@ export default function SocialMediaTool(): JSX.Element {
                   </div>
                 );
               }
-
-              // Instagram special tile: show connected user or connect status
               if (p.id === "instagram") {
                 return (
                   <div key={p.id} className={`p-3 rounded-xl border ${!isConnected ? "opacity-50 bg-gray-100" : "bg-white/90 hover:shadow-sm"}`}>
@@ -436,7 +391,6 @@ export default function SocialMediaTool(): JSX.Element {
                           {isConnected ? `${instagram?.username || instagram?.name || "Connected"}` : "Not connected"}
                         </div>
                       </div>
-
                       <div className="flex flex-col items-end gap-2">
                         <button
                           onClick={() => setShowInstagramEntities((s) => !s)}
@@ -451,32 +405,6 @@ export default function SocialMediaTool(): JSX.Element {
                   </div>
                 );
               }
-
-              // Facebook special tile: show connected user or connect status
-              if (p.id === "facebook") {
-                return (
-                  <button
-                    key={p.id}
-                    disabled={!isConnected}
-                    onClick={() => togglePlatform(p.id)}
-                    className={`p-3 rounded-xl border transition ${!isConnected ? "opacity-50 cursor-not-allowed bg-gray-100" : basicSelected ? "scale-105 bg-white shadow-lg" : "bg-white/90 hover:shadow-sm"}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`${p.bgColor} w-10 h-10 rounded-lg flex items-center justify-center`}>
-                        <p.icon className={`w-5 h-5 ${p.color}`} />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-semibold text-sm">{p.name}</div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {isConnected ? `${facebook?.name || "Connected"}` : "Not connected"}
-                        </div>
-                      </div>
-                      {basicSelected && <CheckCircle className="w-4 h-4 text-green-600" />}
-                    </div>
-                  </button>
-                );
-              }
-
               return (
                 <button
                   key={p.id}
@@ -496,10 +424,8 @@ export default function SocialMediaTool(): JSX.Element {
                 </button>
               );
             })}
-
           </CardContent>
 
-          {/* LINKEDIN ENTITIES PANEL */}
           {CONNECTED.linkedin && showLinkedinEntities && (
             <CardContent className="p-4 border-t">
               <h3 className="text-sm font-semibold mb-3">LinkedIn Targets</h3>
@@ -507,7 +433,6 @@ export default function SocialMediaTool(): JSX.Element {
                 {linkedinEntities.length === 0 && (
                   <div className="p-3 bg-gray-50 rounded text-sm text-gray-600">No LinkedIn profile/pages found.</div>
                 )}
-
                 {linkedinEntities.map((e) => {
                   const sel = isSelected(e.urn);
                   return (
@@ -517,7 +442,6 @@ export default function SocialMediaTool(): JSX.Element {
                         <div className="font-medium text-sm">{e.name}</div>
                         <div className="text-xs text-gray-500">{e.type === "person" ? "Personal profile" : "Company Page"}</div>
                       </div>
-
                       <div>
                         <input
                           type="checkbox"
@@ -535,7 +459,6 @@ export default function SocialMediaTool(): JSX.Element {
             </CardContent>
           )}
 
-          {/* INSTAGRAM ENTITIES PANEL */}
           {CONNECTED.instagram && showInstagramEntities && (
             <CardContent className="p-4 border-t">
               <h3 className="text-sm font-semibold mb-3">Instagram Targets</h3>
@@ -543,7 +466,6 @@ export default function SocialMediaTool(): JSX.Element {
                 {instagramEntities.length === 0 && (
                   <div className="p-3 bg-gray-50 rounded text-sm text-gray-600">No Instagram business account or connected pages found.</div>
                 )}
-
                 {instagramEntities.map((e) => {
                   const sel = isSelected(e.key);
                   return (
@@ -553,7 +475,6 @@ export default function SocialMediaTool(): JSX.Element {
                         <div className="font-medium text-sm">{e.name}</div>
                         <div className="text-xs text-gray-500">{e.type === "business" ? "Instagram Business" : "Facebook Page (connected to IG)"}</div>
                       </div>
-
                       <div>
                         <input
                           type="checkbox"
@@ -572,14 +493,12 @@ export default function SocialMediaTool(): JSX.Element {
           )}
         </Card>
 
-        {/* POST CREATOR */}
         <Card>
           <CardHeader className="border-b p-4">
             <h2 className="text-lg font-bold">Create Your Post</h2>
           </CardHeader>
 
           <CardContent className="p-6 space-y-4">
-            {/* CAPTION */}
             <div>
               <Label>Caption *</Label>
               <Textarea
@@ -590,7 +509,6 @@ export default function SocialMediaTool(): JSX.Element {
               />
             </div>
 
-            {/* AI ENHANCEMENT */}
             <div className="flex items-center justify-between py-2">
               <Label className="text-gray-700 font-medium">AI Enhancement</Label>
               <div className="flex items-center gap-3">
@@ -601,7 +519,6 @@ export default function SocialMediaTool(): JSX.Element {
               </div>
             </div>
 
-            {/* IMAGE UPLOAD */}
             <div>
               <Label>Optional Image</Label>
               <div className="border-2 border-dashed p-4 rounded">
@@ -629,12 +546,10 @@ export default function SocialMediaTool(): JSX.Element {
                     <Upload className="w-8 h-8 mx-auto text-gray-400" />
                     <p>Click to upload</p>
 
-                    {/* Dev: quick sample image loader using uploaded file path */}
                     <div className="mt-2">
                       <button
                         type="button"
                         onClick={() => {
-                          // Use the local uploaded file path (tooling will convert path to URL)
                           setImagePreview(SAMPLE_UPLOADED_IMAGE);
                           setImageFile(null);
                         }}
@@ -648,7 +563,33 @@ export default function SocialMediaTool(): JSX.Element {
               </div>
             </div>
 
-            {/* POST MODE */}
+            {selectedPlatforms.includes("bluesky") && (
+              <div className="p-4 border rounded bg-sky-50">
+                <h3 className="font-semibold mb-2 text-sky-700">Bluesky Login</h3>
+                <div className="mb-3">
+                  <Label>Bluesky Username</Label>
+                  <input
+                    type="text"
+                    className="w-full border p-2 rounded"
+                    placeholder="yourname.bsky.social"
+                    value={blueskyUsername}
+                    onChange={(e) => setBlueskyUsername(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Bluesky App Password</Label>
+                  <input
+                    type="password"
+                    className="w-full border p-2 rounded"
+                    placeholder="xxxx-xxxx-xxxx-xxxx"
+                    value={blueskyPassword}
+                    onChange={(e) => setBlueskyPassword(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">This is required to publish to Bluesky.</p>
+                </div>
+              </div>
+            )}
+
             <div>
               <Label>Posting Mode</Label>
               <select
