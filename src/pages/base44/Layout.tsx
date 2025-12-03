@@ -2,18 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Sparkles, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-import {
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/clerk-react";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const location = useLocation();
+
+  useEffect(() => {
+    document.documentElement.classList.add("dark"); // ✅ CRITICAL FIX
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -23,10 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMobileMenuOpen(false);
-    const timer = setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 50);
-    return () => clearTimeout(timer);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
 
   const navLinks = [
@@ -38,57 +33,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#1A1A1C] text-[#D6D7D8] overflow-x-hidden">
-
-      {/* GLOBAL STYLES FROM NEW LAYOUT */}
-      <style>{`
-        .metallic-gradient {
-          background: linear-gradient(135deg, #D6D7D8 0%, #A9AAAC 50%, #5B5C60 100%);
-        }
-        .gold-gradient {
-          background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
-        }
-        .gold-text {
-          background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        .silver-text {
-          background: linear-gradient(135deg, #D6D7D8 0%, #A9AAAC 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        .glass-card {
-          background: linear-gradient(135deg, rgba(59,60,62,0.6) 0%, rgba(26,26,28,0.8) 100%);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(214,215,216,0.1);
-        }
-        .glass-card-gold {
-          background: linear-gradient(135deg, rgba(225,195,122,0.1) 0%, rgba(182,147,76,0.05) 100%);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(225,195,122,0.2);
-        }
-        .glow-gold {
-          box-shadow: 0 0 40px rgba(225,195,122,0.3);
-        }
-        .nav-glass {
-          background: linear-gradient(135deg, rgba(26,26,28,0.95) 0%, rgba(59,60,62,0.9) 100%);
-          backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(214,215,216,0.1);
-        }
-        .btn-gold {
-          background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
-          color: #1A1A1C;
-          font-weight: 600;
-        }
-        .btn-outline {
-          border: 1px solid rgba(214,215,216,0.3);
-          background: transparent;
-          color: #D6D7D8;
-        }
-      `}</style>
-
-      {/* NAVBAR */}
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* ✅ NAVBAR */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all ${
           isScrolled ? "nav-glass py-3" : "bg-transparent py-5"
@@ -129,7 +75,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
             <SignedIn>
               <Link
-                to="/account-settings"
+                to="/account"
                 className="btn-gold px-6 py-2.5 rounded-full text-sm flex items-center gap-2"
               >
                 <User className="w-4 h-4" />
@@ -178,7 +124,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
                 <SignedIn>
                   <Link
-                    to="/account-settings"
+                    to="/account"
                     className="btn-gold block text-center px-6 py-3 rounded-full"
                   >
                     My Account
@@ -190,7 +136,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </AnimatePresence>
       </nav>
 
-      {/* PAGE TRANSITION */}
+      {/* PAGE TRANSITIONS */}
       <AnimatePresence mode="wait">
         <motion.main
           key={location.pathname}
@@ -205,7 +151,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* FOOTER */}
-      <footer className="border-t border-[#3B3C3E] bg-[#1A1A1C] mt-20">
+      <footer className="border-t border-[#3B3C3E] bg-background mt-20">
         <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <p className="text-sm text-[#A9AAAC] max-w-md">

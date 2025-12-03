@@ -114,3 +114,52 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* ==============================
+   ✅ BASE44 GLOBAL DESIGN TOKENS
+============================== */
+
+.gold-gradient {
+  background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(59,60,62,0.6), rgba(26,26,28,0.8));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(214,215,216,0.1);
+}
+
+.glass-card-gold {
+  background: linear-gradient(135deg, rgba(225,195,122,0.1), rgba(182,147,76,0.05));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(225,195,122,0.2);
+}
+
+.glow-gold {
+  box-shadow: 0 0 40px rgba(225,195,122,0.3);
+}
+
+.nav-glass {
+  background: linear-gradient(135deg, rgba(26,26,28,0.95), rgba(59,60,62,0.9));
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(214,215,216,0.1);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
+  color: #1A1A1C;
+  font-weight: 600;
+}
+
+.btn-outline {
+  border: 1px solid rgba(214,215,216,0.3);
+  background: transparent;
+  color: #D6D7D8;
+}
+
