@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, SignIn, SignUp } from "@clerk/clerk-react";
 
 // ✅ Layout
 import Layout from "./pages/base44/Layout";
@@ -18,7 +18,6 @@ import Portfolio from "./pages/base44/Portfolio";
 import Contact from "./pages/base44/Contact";
 import Resources from "./pages/base44/Resources";
 import Account from "./pages/base44/Account";
-
 
 // ✅ ✅ NEW FILES YOU ADDED
 import DashboardPreview from "./pages/base44/DashboardPreview";
@@ -39,7 +38,6 @@ import StripeCheckout from "./pages/base44/StripeCheckout";
 import Dashboard from "./pages/base44/Dashboard";
 import LeadsTool from "./pages/base44/LeadsTool";
 import SocialMediaTool from "./pages/base44/SocialMediaTool";
-// import AccountSettings from "./pages/base44/AccountSettings";
 
 // ✅ OAuth
 import LinkedInCallback from "./pages/linkedin/callback";
@@ -50,7 +48,6 @@ import TikTokCallback from "./pages/auth/TiktokCallback";
 
 // ✅ Auth
 import Login from "./pages/base44/Login";
-import SignupPage from "./pages/base44/Signup";
 
 // ✅ Other
 import NotFound from "./pages/NotFound";
@@ -79,7 +76,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-
           {/* ✅ PUBLIC MARKETING */}
           <Route path="/" element={<Layout><Home /></Layout>} />
           <Route path="/home" element={<Layout><Home /></Layout>} />
@@ -90,7 +86,7 @@ const App = () => (
           <Route path="/contact" element={<Layout><Contact /></Layout>} />
           <Route path="/resources" element={<Layout><Resources /></Layout>} />
 
-          {/* ✅ ✅ NEW ROUTES YOU ADDED */}
+          {/* ✅ NEW ROUTES */}
           <Route path="/dashboard-preview" element={<Layout><DashboardPreview /></Layout>} />
           <Route path="/core-tools" element={<Layout><CoreTools /></Layout>} />
           <Route path="/corporate-tools" element={<Layout><CorporateTools /></Layout>} />
@@ -99,7 +95,6 @@ const App = () => (
           <Route path="/subscription-success" element={<Layout><SubscriptionSuccess /></Layout>} />
           <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
           <Route path="/terms" element={<Layout><Terms /></Layout>} />
-          
 
           {/* ✅ PLANS */}
           <Route path="/starter" element={<Layout><StarterPlan /></Layout>} />
@@ -108,19 +103,16 @@ const App = () => (
 
           {/* ✅ AUTH */}
           <Route path="/login" element={<Login />} />
-          <Route path="/login/factor-one" element={<Login />} />
-          <Route path="/login/factor-two" element={<Login />} />
 
-          <Route path="/sign-up" element={<SignupPage />} />
-          <Route path="/sign-up/factor-one" element={<SignupPage />} />
-          <Route path="/sign-up/factor-two" element={<SignupPage />} />
+          {/* ✅ ✅ ✅ CLERK ROUTES (EMAIL VERIFY FIX) */}
+          <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
+          <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
 
           {/* ✅ DASHBOARD */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/social-posts" element={<ProtectedRoute><SocialMediaTool /></ProtectedRoute>} />
           <Route path="/leads-calls" element={<ProtectedRoute><LeadsTool /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-
 
           {/* ✅ OAUTH */}
           <Route path="/linkedin/callback" element={<ProtectedRoute><LinkedInCallback /></ProtectedRoute>} />
@@ -131,7 +123,6 @@ const App = () => (
 
           {/* ✅ 404 */}
           <Route path="*" element={<NotFound />} />
-
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
