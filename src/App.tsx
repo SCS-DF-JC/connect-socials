@@ -103,14 +103,11 @@ const App = () => (
 
           {/* ✅ AUTH */}
           <Route path="/login" element={<Login />} />
-
-          {/* ✅ ✅ ✅ CLERK ROUTES (EMAIL VERIFY FIX) */}
-         {/* ✅ ✅ ✅ CLERK AUTH – CENTERED FIX */}
 <Route
-  path="/sign-in/*"
+  path="/login/*"
   element={
     <div className="min-h-screen flex items-center justify-center bg-[#0F0F10]">
-      <SignIn routing="path" path="/sign-in" />
+      <SignIn routing="path" path="/login" />
     </div>
   }
 />
