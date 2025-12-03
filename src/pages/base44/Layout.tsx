@@ -35,7 +35,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
   const { isAuthenticated, login } = useSubscription();
 
   const navLinks = [
-    { name: "Dashboard", href: "/dashboard" },
+    { name: "Dashboard", href: "/dashboard-preview" },
     { name: "Core Tools", href: "/core-tools" },
     { name: "Corporate", href: "/corporate-tools" },
     { name: "Pricing", href: "/pricing" },
