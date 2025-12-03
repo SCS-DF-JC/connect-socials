@@ -1,13 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "../../utils";
 import { motion } from "framer-motion";
 import {
   Lock,
   Sparkles,
   ArrowRight,
   Check,
-  ChevronRight,
   Play,
   Zap,
   LogIn
@@ -71,6 +69,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
 
   return (
     <div className="min-h-screen pt-24 pb-20">
+
       {/* ================= HERO ================= */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
@@ -145,6 +144,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
               )}
             </div>
 
+            {/* CTA */}
             {hasAccess ? (
               <button className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2">
                 <Play className="w-5 h-5" />
@@ -162,7 +162,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
               </button>
             ) : (
               <Link
-                to={createPageUrl("Pricing")}
+                to="/pricing"
                 className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2"
               >
                 <Lock className="w-5 h-5" />
@@ -233,7 +233,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
 
             {!hasAccess ? (
               <Link
-                to={createPageUrl("Pricing")}
+                to="/pricing"
                 className="btn-gold px-8 py-4 rounded-full font-semibold inline-flex items-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
