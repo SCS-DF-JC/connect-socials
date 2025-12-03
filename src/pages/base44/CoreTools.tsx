@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Crown } from "lucide-react";
+import { ArrowRight, Share2 } from "lucide-react";
 
 import SectionHeading from "../../components/shared/SectionHeading";
 import ToolGridWithHighlight from "../../components/shared/ToolGridWithHighlight";
 import SubscribeModal from "../../components/shared/SubscribeModal";
-import { corporateTools } from "../../components/tools/toolsConfig";
+import { coreTools } from "../../components/tools/toolsConfig";
 
-export default function CorporateTools() {
+export default function CoreTools() {
   const [showModal, setShowModal] = useState(false);
   const [selectedTool, setSelectedTool] = useState<string>("");
 
@@ -22,31 +22,26 @@ export default function CorporateTools() {
       {/* ================= HERO ================= */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#E1C37A]/15 rounded-full blur-[150px]" />
-          <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-[#B6934C]/10 rounded-full blur-[100px]" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#D6D7D8]/10 rounded-full blur-[150px]" />
+          <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-[#A9AAAC]/5 rounded-full blur-[100px]" />
         </div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Crown className="w-6 h-6 text-[#E1C37A]" />
-          </div>
-
           <SectionHeading
-            badge="Corporate Tools"
-            title="Enterprise-grade firepower."
-            subtitle="For serious operators who need serious results. These tools power multi-million dollar brands."
-            goldTitle
+            badge="Core Tools"
+            title="The essentials. Automated."
+            subtitle="Everything you need to run a lean, mean content machine. Perfect for growing businesses ready to scale."
           />
 
           <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
-            <span className="px-4 py-2 rounded-full text-sm bg-[#E1C37A]/10 text-[#E1C37A] border border-[#E1C37A]/20">
-              10 Enterprise Tools
+            <span className="px-4 py-2 rounded-full text-sm bg-[#D6D7D8]/10 text-[#D6D7D8] border border-[#D6D7D8]/20">
+              11 Powerful Tools
             </span>
-            <span className="px-4 py-2 rounded-full text-sm bg-[#E1C37A]/10 text-[#E1C37A] border border-[#E1C37A]/20">
-              Priority Support
+            <span className="px-4 py-2 rounded-full text-sm bg-[#D6D7D8]/10 text-[#D6D7D8] border border-[#D6D7D8]/20">
+              Unlimited Usage
             </span>
-            <span className="px-4 py-2 rounded-full text-sm bg-[#E1C37A]/10 text-[#E1C37A] border border-[#E1C37A]/20">
-              Dedicated Manager
+            <span className="px-4 py-2 rounded-full text-sm bg-[#D6D7D8]/10 text-[#D6D7D8] border border-[#D6D7D8]/20">
+              24/7 Automation
             </span>
           </div>
         </div>
@@ -56,152 +51,97 @@ export default function CorporateTools() {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-6">
           <ToolGridWithHighlight
-            tools={corporateTools}
-            tier="Corporate"
+            tools={coreTools}
+            tier="Core"
             onUnlockClick={handleUnlock}
           />
         </div>
       </section>
 
-      {/* ================= COMPARISON ================= */}
+      {/* ================= PREVIEW SECTION ================= */}
       <section className="py-24">
         <div className="max-w-5xl mx-auto px-6">
-          <SectionHeading
-            badge="Core vs Corporate"
-            title="What's the difference?"
-            subtitle="Both tiers automate your marketing. Corporate just goes deeper."
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="glass-card rounded-3xl p-8 md:p-12"
+          >
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <span className="text-[#D6D7D8] text-sm font-medium uppercase tracking-wider">
+                  Tool Preview
+                </span>
 
-          <div className="mt-12 grid md:grid-cols-2 gap-8">
-            {/* Core */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="glass-card rounded-2xl p-8"
-            >
-              <h3 className="text-xl font-bold mb-4 silver-text">Core Tools</h3>
-              <ul className="space-y-3">
-                {[
-                  "Perfect for growing businesses",
-                  "Essential automation suite",
-                  "Social, email, SEO, CRM basics",
-                  "Weekly performance reports",
-                  "Email support"
-                ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3 text-[#A9AAAC]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#D6D7D8]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+                <h3 className="text-2xl md:text-3xl font-bold mt-4 mb-4">
+                  See the Social Media Engine in action
+                </h3>
 
-              <div className="mt-6 pt-6 border-t border-[#3B3C3E]">
-                <span className="text-2xl font-bold text-white">$397</span>
-                <span className="text-[#5B5C60] ml-2">/month</span>
+                <p className="text-[#A9AAAC] mb-6">
+                  Watch how a single click generates a week's worth of posts,
+                  perfectly tailored to each platform. Captions, hashtags,
+                  optimal posting times. Done.
+                </p>
+
+                <button
+                  onClick={() => handleUnlock("Social Media Engine Demo")}
+                  className="btn-gold px-6 py-3 rounded-full flex items-center gap-2"
+                >
+                  Watch Demo
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
-            </motion.div>
 
-            {/* Corporate */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="glass-card-gold rounded-2xl p-8 glow-gold"
-            >
-              <h3 className="text-xl font-bold mb-4 gold-text">Corporate Tools</h3>
-              <ul className="space-y-3">
-                {[
-                  "Built for enterprise operations",
-                  "Full Core suite included",
-                  "Enterprise CRM integrations",
-                  "Advanced analytics & personalization",
-                  "Dedicated success manager"
-                ].map((item, index) => (
-                  <li key={index} className="flex items-center gap-3 text-[#D6D7D8]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#E1C37A]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <div className="relative">
+                <div className="aspect-video rounded-2xl bg-[#1A1A1C] locked-blur">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full metallic-gradient flex items-center justify-center">
+                      <Share2 className="w-8 h-8 text-[#1A1A1C]" />
+                    </div>
+                  </div>
+                </div>
 
-              <div className="mt-6 pt-6 border-t border-[#E1C37A]/20">
-                <span className="text-2xl font-bold text-white">$1,197</span>
-                <span className="text-[#5B5C60] ml-2">/month</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-[#1A1A1C]/50 rounded-2xl">
+                  <button
+                    onClick={() => handleUnlock("Demo Video")}
+                    className="btn-outline px-6 py-3 rounded-full"
+                  >
+                    Unlock to Watch
+                  </button>
+                </div>
               </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= USE CASES ================= */}
-      <section className="py-24 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#E1C37A]/5 to-transparent" />
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <SectionHeading badge="Who It's For" title="Corporate Tools are built for:" />
-
-          <div className="grid md:grid-cols-3 gap-6 mt-12">
-            {[
-              {
-                title: "E-commerce Brands",
-                desc: "Scaling DTC operations across multiple channels and regions."
-              },
-              {
-                title: "Marketing Agencies",
-                desc: "Managing 10+ clients without scaling headcount."
-              },
-              {
-                title: "Enterprise Teams",
-                desc: "Replacing fragmented tools with one unified platform."
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="glass-card rounded-2xl p-6 text-center"
-              >
-                <h4 className="font-semibold text-white mb-2">{item.title}</h4>
-                <p className="text-sm text-[#A9AAAC]">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ================= CTA ================= */}
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="glass-card-gold rounded-3xl p-12 glow-gold">
-            <Crown className="w-12 h-12 text-[#E1C37A] mx-auto mb-6" />
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to automate the basics?
+          </h2>
 
-            <h2 className="text-3xl font-bold mb-4">
-              Ready for the big leagues?
-            </h2>
+          <p className="text-[#A9AAAC] mb-8 max-w-xl mx-auto">
+            Core Tools start at $397/month. That's less than a junior marketer's
+            weekly salary.
+          </p>
 
-            <p className="text-[#A9AAAC] mb-8 max-w-xl mx-auto">
-              Corporate Tools unlock the same stack used by 8-figure brands.
-              Your competition is already here.
-            </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/pricing"
+              className="btn-gold px-8 py-4 rounded-full flex items-center justify-center gap-2 font-semibold"
+            >
+              View Pricing
+              <ArrowRight className="w-5 h-5" />
+            </Link>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/pricing"
-                className="btn-gold px-8 py-4 rounded-full flex items-center justify-center gap-2 font-semibold"
-              >
-                Get Corporate Access
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-
-              <Link
-                to="/contact"
-                className="btn-outline px-8 py-4 rounded-full flex items-center justify-center gap-2"
-              >
-                Talk to Sales
-              </Link>
-            </div>
+            <Link
+              to="/corporate-tools"
+              className="btn-outline px-8 py-4 rounded-full flex items-center justify-center gap-2"
+            >
+              See Corporate Tools
+            </Link>
           </div>
         </div>
       </section>
