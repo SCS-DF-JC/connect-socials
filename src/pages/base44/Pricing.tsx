@@ -9,9 +9,9 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import SectionHeading from "../components/shared/SectionHeading";
-import PricingCardsSection from "../components/pricing/PricingCardsSection";
-import { PLANS } from "../components/subscription/plansConfig";
+import SectionHeading from "../../components/shared/SectionHeading";
+import PricingCardsSection from "../../components/pricing/PricingCardsSection";
+import { PLANS } from "../../components/subscription/plansConfig";
 
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 
