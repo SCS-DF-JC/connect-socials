@@ -1,316 +1,230 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-
-import {
-  Menu,
-  X,
-  ChevronRight,
-  Home as HomeIcon,
-  LayoutDashboard,
-  Share2,
-  Mail,
-  BarChart3,
-  Phone,
-  Settings,
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { Menu, X, Sparkles, User } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   SignedIn,
   SignedOut,
   UserButton,
-  useUser,
 } from "@clerk/clerk-react";
 
-export default function Layout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [isScrollingDown, setIsScrollingDown] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const { user } = useUser();
   const location = useLocation();
 
-  const navItems = [
-    { name: "Home", path: "/home" },
-    { name: "About", path: "/about" },
-    { name: "Services", path: "/services" },
-    { name: "Packages", path: "/packages" },
-    { name: "Portfolio", path: "/portfolio" },
-    { name: "Resources", path: "/resources" },
-    { name: "Contact", path: "/contact" },
-  ];
-
-  // ⭐ FIXED ROUTES (MATCH APP.TSX NOW)
-  const sidebarItems = [
-    { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { name: "Social Posts", path: "/social-posts", icon: Share2 },
-    { name: "Email Campaigns", path: "/email-campaigns", icon: Mail },
-    { name: "Analytics", path: "/analytics", icon: BarChart3 },
-    { name: "Leads & Calls", path: "/leads-calls", icon: Phone },
-    { name: "Account Settings", path: "/account-settings", icon: Settings },
-  ];
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
-    setMenuOpen(false);
-    setSidebarOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setMobileMenuOpen(false);
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
+    return () => clearTimeout(timer);
   }, [location.pathname]);
 
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 50);
-      setIsScrollingDown(y > lastScrollY && y > 120);
-      setLastScrollY(y);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [lastScrollY]);
-
-  const isActive = (path) =>
-    location.pathname === path ||
-    location.pathname.startsWith(path + "/");
+  const navLinks = [
+    { name: "Dashboard", href: "/dashboard-preview" },
+    { name: "Core Tools", href: "/core-tools" },
+    { name: "Corporate", href: "/corporate-tools" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "Contact", href: "/contact" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 w-12 h-12 rounded-xl shadow-lg bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center text-white"
+    <div className="min-h-screen bg-[#1A1A1C] text-[#D6D7D8] overflow-x-hidden">
+
+      {/* GLOBAL STYLES FROM NEW LAYOUT */}
+      <style>{`
+        .metallic-gradient {
+          background: linear-gradient(135deg, #D6D7D8 0%, #A9AAAC 50%, #5B5C60 100%);
+        }
+        .gold-gradient {
+          background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
+        }
+        .gold-text {
+          background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .silver-text {
+          background: linear-gradient(135deg, #D6D7D8 0%, #A9AAAC 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .glass-card {
+          background: linear-gradient(135deg, rgba(59,60,62,0.6) 0%, rgba(26,26,28,0.8) 100%);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(214,215,216,0.1);
+        }
+        .glass-card-gold {
+          background: linear-gradient(135deg, rgba(225,195,122,0.1) 0%, rgba(182,147,76,0.05) 100%);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(225,195,122,0.2);
+        }
+        .glow-gold {
+          box-shadow: 0 0 40px rgba(225,195,122,0.3);
+        }
+        .nav-glass {
+          background: linear-gradient(135deg, rgba(26,26,28,0.95) 0%, rgba(59,60,62,0.9) 100%);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(214,215,216,0.1);
+        }
+        .btn-gold {
+          background: linear-gradient(135deg, #E1C37A 0%, #B6934C 100%);
+          color: #1A1A1C;
+          font-weight: 600;
+        }
+        .btn-outline {
+          border: 1px solid rgba(214,215,216,0.3);
+          background: transparent;
+          color: #D6D7D8;
+        }
+      `}</style>
+
+      {/* NAVBAR */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all ${
+          isScrolled ? "nav-glass py-3" : "bg-transparent py-5"
+        }`}
       >
-        {sidebarOpen ? <X /> : <Menu />}
-      </button>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <Link to="/home" className="flex items-center gap-3">
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/692b490db467b6aad2cac54d/360f43b39_Edittheuploadedlo.png"
+              className="h-10 w-10 rounded-lg"
+            />
+            <span className="text-lg font-semibold hidden sm:block">
+              Smart Content Solutions
+            </span>
+          </Link>
 
-      {/* SIDEBAR */}
-      <aside
-        className={`fixed top-0 left-0 z-[40] h-screen w-80 bg-[linear-gradient(180deg,#3B82F6_0%,#2563EB_35%,#0EA5E9_65%,#10B981_100%)]
-          transition-transform duration-300
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
-      >
-        <div className="h-full flex flex-col text-white overflow-y-auto">
-
-          {/* HEADER */}
-          <div className="p-6 border-b border-white/10">
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_68b073eda37c031e7cfdae1c/ffd16f891_logo.jpg"
-                className="h-12 w-12 rounded bg-white p-1 object-contain"
-              />
-              <div>
-                <div className="font-bold text-lg">Smart Content</div>
-                <div className="text-xs text-white/80">Solutions</div>
-              </div>
-            </div>
-
-            {/* SIGNED OUT */}
-            <SignedOut>
-              <div className="bg-white/10 rounded-lg p-3">
-                <p className="text-sm mb-2">Access your dashboard</p>
-                <Link to="/login">
-                  <Button size="sm" className="bg-white w-full text-blue-600">
-                    Login / Register
-                  </Button>
-                </Link>
-              </div>
-            </SignedOut>
-
-            {/* SIGNED IN */}
-            <SignedIn>
-              <div className="bg-white/10 rounded-lg p-3">
-                <p className="font-semibold">{user?.fullName}</p>
-                <p className="text-xs opacity-80 mb-3">
-                  {user?.primaryEmailAddress?.emailAddress}
-                </p>
-
-                <Link to="/dashboard">
-                  <Button className="bg-white w-full text-blue-600">
-                    Go to Dashboard
-                  </Button>
-                </Link>
-
-                <div className="mt-4">
-                  <UserButton afterSignOutUrl="/home" />
-                </div>
-              </div>
-            </SignedIn>
-          </div>
-
-          {/* PUBLIC NAV */}
-          <nav className="flex-1 p-4 space-y-4">
-            <div>
-              <p className="text-xs text-white/70 uppercase mb-2 px-3">
-                Public Pages
-              </p>
-
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
-                    isActive(item.path)
-                      ? "bg-white text-blue-600 font-semibold shadow-lg"
-                      : "text-white/90 hover:bg-white/10"
-                  }`}
-                >
-                  <HomeIcon className="w-5 h-5" />
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* DASHBOARD NAV */}
-            <SignedIn>
-              <div className="mt-4">
-                <p className="text-xs text-white/70 uppercase mb-2 px-3">
-                  Client Tools
-                </p>
-
-                {sidebarItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg ${
-                        isActive(item.path)
-                          ? "bg-white text-blue-600 font-semibold shadow-lg"
-                          : "text-white/90 hover:bg-white/10"
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
-              </div>
-            </SignedIn>
-          </nav>
-        </div>
-      </aside>
-
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-[30]"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* TOP NAV */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-30 transition-transform duration-300
-          ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}
-          ${scrolled ? "bg-white/95 backdrop-blur shadow-md" : "bg-white"}
-        `}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-
-            <Link to="/home" className="flex items-center gap-3 ml-16">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_68b073eda37c031e7cfdae1c/ffd16f891_logo.jpg"
-                className="h-12 w-12 rounded object-contain shadow"
-              />
-              <div className="leading-tight">
-                <span className="font-bold text-2xl bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
-                  Smart Content
-                </span>
-                <div className="text-sm text-gray-500 -mt-1">
-                  Solutions
-                </div>
-              </div>
-            </Link>
-
-            <nav className="hidden lg:flex items-center gap-10">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`font-medium ${
-                    isActive(item.path)
-                      ? "text-blue-600 border-b-2 border-green-500 pb-1"
-                      : "text-gray-700 hover:text-blue-600"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-
-            <div className="hidden lg:flex items-center gap-4">
-              <SignedOut>
-                <Link to="/login">
-                  <Button className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg flex items-center gap-2">
-                    Get Started <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </Link>
-              </SignedOut>
-
-              <SignedIn>
-                <Link to="/dashboard">
-                  <Button className="bg-blue-600 text-white">Dashboard</Button>
-                </Link>
-                <UserButton afterSignOutUrl="/home" />
-              </SignedIn>
-            </div>
-
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
-            >
-              {menuOpen ? <X /> : <Menu />}
-            </button>
-          </div>
-        </div>
-
-        <div
-          className={`lg:hidden transition-max-h overflow-hidden ${
-            menuOpen ? "max-h-96 bg-white border-t" : "max-h-0"
-          }`}
-        >
-          <div className="p-4 space-y-2">
-            {navItems.map((item) => (
+          {/* DESKTOP NAV */}
+          <div className="hidden lg:flex items-center gap-8">
+            {navLinks.map((link) => (
               <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setMenuOpen(false)}
-                className={`block px-3 py-2 rounded-lg ${
-                  isActive(item.path)
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
+                key={link.name}
+                to={link.href}
+                className="text-sm text-[#A9AAAC] hover:text-[#E1C37A]"
               >
-                {item.name}
+                {link.name}
               </Link>
             ))}
 
             <SignedOut>
-              <Link to="/login">
-                <Button className="mt-3 w-full bg-blue-600 text-white">
-                  Login
-                </Button>
+              <Link
+                to="/login"
+                className="btn-gold px-6 py-2.5 rounded-full text-sm flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Sign In
               </Link>
             </SignedOut>
 
             <SignedIn>
-              <Link to="/dashboard">
-                <Button className="mt-3 w-full bg-blue-600 text-white">
-                  Dashboard
-                </Button>
+              <Link
+                to="/account-settings"
+                className="btn-gold px-6 py-2.5 rounded-full text-sm flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
+                Account
               </Link>
-              <div className="mt-3">
-                <UserButton afterSignOutUrl="/home" />
-              </div>
             </SignedIn>
           </div>
-        </div>
-      </header>
 
-      <main className="pt-24">{children}</main>
+          {/* MOBILE BUTTON */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2"
+          >
+            {mobileMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
+
+        {/* MOBILE MENU */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden nav-glass"
+            >
+              <div className="px-6 py-6 space-y-4">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className="block text-[#A9AAAC] hover:text-[#E1C37A]"
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+
+                <SignedOut>
+                  <Link
+                    to="/login"
+                    className="btn-gold block text-center px-6 py-3 rounded-full"
+                  >
+                    Sign In
+                  </Link>
+                </SignedOut>
+
+                <SignedIn>
+                  <Link
+                    to="/account-settings"
+                    className="btn-gold block text-center px-6 py-3 rounded-full"
+                  >
+                    My Account
+                  </Link>
+                </SignedIn>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+
+      {/* PAGE TRANSITION */}
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={location.pathname}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.25 }}
+          className="pt-24"
+        >
+          {children}
+        </motion.main>
+      </AnimatePresence>
+
+      {/* FOOTER */}
+      <footer className="border-t border-[#3B3C3E] bg-[#1A1A1C] mt-20">
+        <div className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-12">
+          <div className="md:col-span-2">
+            <p className="text-sm text-[#A9AAAC] max-w-md">
+              AI automation that runs while you sleep. Scale your content. Crush
+              your competition.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-[#E1C37A] font-semibold mb-4">Platform</h4>
+            <Link to="/dashboard-preview">Dashboard</Link>
+          </div>
+
+          <div>
+            <h4 className="text-[#E1C37A] font-semibold mb-4">Company</h4>
+            <Link to="/contact">Contact</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -55,8 +55,6 @@ type InstagramEntity = {
   logo?: string | null;
 };
 
-// ⭐ TikTok icon already included (Music)
-
 const ALL_PLATFORMS: Platform[] = [
   { id: "facebook", name: "Facebook", icon: Facebook, color: "text-blue-600", bgColor: "bg-blue-50" },
   { id: "instagram", name: "Instagram", icon: Instagram, color: "text-pink-600", bgColor: "bg-pink-50" },
