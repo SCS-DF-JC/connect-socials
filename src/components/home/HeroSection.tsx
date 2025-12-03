@@ -97,7 +97,7 @@ export default function HeroSection(): JSX.Element {
               </motion.p>
 
               <motion.div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-                <Link to="/dashboard" className="btn-gold px-8 py-4 rounded-full font-semibold flex items-center gap-2">
+                <Link to="/dashboard-preview" className="btn-gold px-8 py-4 rounded-full font-semibold flex items-center gap-2">
                   See The Dashboard
                   <ArrowRight className="w-5 h-5" />
                 </Link>
