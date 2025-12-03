@@ -17,6 +17,8 @@ import Packages from "./pages/base44/Packages";
 import Portfolio from "./pages/base44/Portfolio";
 import Contact from "./pages/base44/Contact";
 import Resources from "./pages/base44/Resources";
+import Account from "./pages/base44/Account";
+
 
 // ✅ ✅ NEW FILES YOU ADDED
 import DashboardPreview from "./pages/base44/DashboardPreview";
@@ -37,7 +39,7 @@ import StripeCheckout from "./pages/base44/StripeCheckout";
 import Dashboard from "./pages/base44/Dashboard";
 import LeadsTool from "./pages/base44/LeadsTool";
 import SocialMediaTool from "./pages/base44/SocialMediaTool";
-import AccountSettings from "./pages/base44/AccountSettings";
+// import AccountSettings from "./pages/base44/AccountSettings";
 
 // ✅ OAuth
 import LinkedInCallback from "./pages/linkedin/callback";
@@ -97,6 +99,7 @@ const App = () => (
           <Route path="/subscription-success" element={<Layout><SubscriptionSuccess /></Layout>} />
           <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
           <Route path="/terms" element={<Layout><Terms /></Layout>} />
+          
 
           {/* ✅ PLANS */}
           <Route path="/starter" element={<Layout><StarterPlan /></Layout>} />
@@ -116,7 +119,8 @@ const App = () => (
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/social-posts" element={<ProtectedRoute><SocialMediaTool /></ProtectedRoute>} />
           <Route path="/leads-calls" element={<ProtectedRoute><LeadsTool /></ProtectedRoute>} />
-          <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+          <Route path="/account-settings" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+
 
           {/* ✅ OAUTH */}
           <Route path="/linkedin/callback" element={<ProtectedRoute><LinkedInCallback /></ProtectedRoute>} />
