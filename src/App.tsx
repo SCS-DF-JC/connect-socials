@@ -8,7 +8,7 @@ import { useUser, SignIn, SignUp } from "@clerk/clerk-react";
 import SocialAutomationApp from "./components/apps/SocialAutomationApp";
 
 // ✅ ✅ ✅ ADD THIS IMPORT
-import { SubscriptionProvider } from "./components/subscription/SubscriptionProvider";
+import { SubscriptionProvider } from "./components/subscription/useSubscription";
 
 // ✅ Layout
 import Layout from "./pages/base44/Layout";
