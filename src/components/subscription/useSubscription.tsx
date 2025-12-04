@@ -7,16 +7,20 @@ import {
 } from "react";
 import { useUser } from "@clerk/clerk-react";
 import {
-  hasPlan,
-  hasAccessToTool,
-  isSubscriptionActive,
+  hasPlan as baseHasPlan,
+  hasAccessToTool as baseHasAccessToTool,
+  isSubscriptionActive as baseIsSubscriptionActive,
   getUserPlanDetails,
-  UserSubscription
+  UserSubscription as AccessControlUserSubscription
 } from "./accessControl";
 
 /* ============================
-   ✅ Types
+   ✅ Types (extended with role)
 ============================ */
+
+export interface UserSubscription extends AccessControlUserSubscription {
+  role?: "admin" | "user";
+}
 
 interface SubscriptionContextType {
   user: UserSubscription | null;
@@ -62,7 +66,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
             | "past_due"
             | "canceled"
             | "trialing"
-            | "none") || "none"
+            | "none") || "none",
+        role:
+          (clerkUser.publicMetadata?.role as "admin" | "user") || "user"
       };
 
       setUser(subscriptionUser);
@@ -89,14 +95,16 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           | "past_due"
           | "canceled"
           | "trialing"
-          | "none") || "none"
+          | "none") || "none",
+      role:
+        (clerkUser.publicMetadata?.role as "admin" | "user") || "user"
     };
 
     setUser(subscriptionUser);
   };
 
   /* ============================
-     ✅ Context Value
+     ✅ Context Value (ADMIN BYPASS)
   ============================ */
 
   const value: SubscriptionContextType = {
@@ -106,10 +114,24 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     refreshUser,
 
-    hasPlan: (requiredPlan: string) => hasPlan(user, requiredPlan),
-    hasAccessToTool: (toolPlanRequired: string) =>
-      hasAccessToTool(user, toolPlanRequired),
-    isSubscriptionActive: () => isSubscriptionActive(user),
+    // Admin always “has” any plan
+    hasPlan: (requiredPlan: string) => {
+      if (user?.role === "admin") return true;
+      return baseHasPlan(user, requiredPlan);
+    },
+
+    // Admin always has access to any tool
+    hasAccessToTool: (toolPlanRequired: string) => {
+      if (user?.role === "admin") return true;
+      return baseHasAccessToTool(user, toolPlanRequired);
+    },
+
+    // Admin subscription is always treated as active
+    isSubscriptionActive: () => {
+      if (user?.role === "admin") return true;
+      return baseIsSubscriptionActive(user);
+    },
+
     getPlanDetails: () => getUserPlanDetails(user),
 
     // ✅ Clerk-based auth actions

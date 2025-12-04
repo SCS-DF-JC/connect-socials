@@ -7,12 +7,19 @@ import SectionHeading from "../../components/shared/SectionHeading";
 import ToolGridWithHighlight from "../../components/shared/ToolGridWithHighlight";
 import SubscribeModal from "../../components/shared/SubscribeModal";
 import { corporateTools } from "../../components/tools/toolsConfig";
+import { useSubscription } from "../../components/subscription/useSubscription";
 
 export default function CorporateTools() {
   const [showModal, setShowModal] = useState(false);
   const [selectedTool, setSelectedTool] = useState<string>("");
 
+  const { user } = useSubscription();
+  const isAdmin = user?.role === "admin";
+
   const handleUnlock = (toolName: string) => {
+    // ✅ Admin bypasses subscribe modal
+    if (isAdmin) return;
+
     setSelectedTool(toolName);
     setShowModal(true);
   };
@@ -138,7 +145,10 @@ export default function CorporateTools() {
       <section className="py-24 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#E1C37A]/5 to-transparent" />
         <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <SectionHeading badge="Who It's For" title="Corporate Tools are built for:" />
+          <SectionHeading
+            badge="Who It's For"
+            title="Corporate Tools are built for:"
+          />
 
           <div className="grid md:grid-cols-3 gap-6 mt-12">
             {[
@@ -207,11 +217,13 @@ export default function CorporateTools() {
       </section>
 
       {/* ================= SUBSCRIBE MODAL ================= */}
-      <SubscribeModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        toolName={selectedTool}
-      />
+      {!isAdmin && (
+        <SubscribeModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          toolName={selectedTool}
+        />
+      )}
     </div>
   );
 }

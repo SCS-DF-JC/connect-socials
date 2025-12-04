@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Lock, ArrowRight, Check } from "lucide-react";
+import { Lock, ArrowRight, Check, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSubscription } from "../subscription/useSubscription";
 
@@ -30,12 +30,21 @@ function ToolCard({
   onMouseEnter,
   onMouseLeave,
 }: ToolCardProps) {
-  const { hasAccessToTool } = useSubscription();
-  const hasAccess = hasAccessToTool(tool.planRequired);
-  const Icon = tool.icon;
+  const { hasAccessToTool, user } = useSubscription();
 
+  // ✅ ADMIN BYPASS
+  const isAdmin = user?.role === "admin";
+  const hasAccess = isAdmin || hasAccessToTool(tool.planRequired);
+
+  const Icon = tool.icon;
   const CardWrapper: any = tool.slug ? Link : "div";
   const cardProps = tool.slug ? { to: `/tool?slug=${tool.slug}` } : {};
+
+  const handleClick = () => {
+    if (!hasAccess && onUnlockClick) {
+      onUnlockClick(tool);
+    }
+  };
 
   return (
     <motion.div
@@ -46,6 +55,7 @@ function ToolCard({
       className="group relative"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onClick={handleClick}
     >
       <CardWrapper {...cardProps} className="block">
         <div
@@ -55,16 +65,22 @@ function ToolCard({
               : "hover:border-[#E1C37A]/20"
           }`}
         >
-          {/* Locked/Unlocked Overlay */}
+          {/* ================= LOCKED / UNLOCKED / ADMIN OVERLAY ================= */}
           {!hasAccess ? (
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-transparent via-[#1A1A1C]/50 to-[#1A1A1C]/80 z-10 flex flex-col items-center justify-end pb-6 pointer-events-none">
               <div className="w-10 h-10 rounded-full bg-[#3B3C3E] flex items-center justify-center mb-3">
                 <Lock className="w-5 h-5 text-[#E1C37A]" />
               </div>
               <span className="btn-gold px-5 py-2 rounded-full text-sm flex items-center gap-2 pointer-events-auto">
-                View Tool
+                Unlock Tool
                 <ArrowRight className="w-4 h-4" />
               </span>
+            </div>
+          ) : isAdmin ? (
+            <div className="absolute top-4 right-4 z-10">
+              <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
             </div>
           ) : (
             <div className="absolute top-4 right-4 z-10">
@@ -74,7 +90,7 @@ function ToolCard({
             </div>
           )}
 
-          {/* Content */}
+          {/* ================= CONTENT ================= */}
           <div className={!hasAccess ? "opacity-60" : ""}>
             <div
               className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${

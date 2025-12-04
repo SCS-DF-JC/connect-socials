@@ -7,12 +7,19 @@ import SectionHeading from "../../components/shared/SectionHeading";
 import ToolGridWithHighlight from "../../components/shared/ToolGridWithHighlight";
 import SubscribeModal from "../../components/shared/SubscribeModal";
 import { coreTools } from "../../components/tools/toolsConfig";
+import { useSubscription } from "../../components/subscription/useSubscription";
 
 export default function CoreTools() {
   const [showModal, setShowModal] = useState(false);
   const [selectedTool, setSelectedTool] = useState<string>("");
 
+  const { user } = useSubscription();
+  const isAdmin = user?.role === "admin";
+
   const handleUnlock = (toolName: string) => {
+    // ✅ Admin bypasses subscribe modal completely
+    if (isAdmin) return;
+
     setSelectedTool(toolName);
     setShowModal(true);
   };
@@ -87,13 +94,18 @@ export default function CoreTools() {
                   onClick={() => handleUnlock("Social Media Engine Demo")}
                   className="btn-gold px-6 py-3 rounded-full flex items-center gap-2"
                 >
-                  Watch Demo
+                  {isAdmin ? "Watch Now" : "Watch Demo"}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="relative">
-                <div className="aspect-video rounded-2xl bg-[#1A1A1C] locked-blur">
+                {/* ✅ Blur only for NON-admins */}
+                <div
+                  className={`aspect-video rounded-2xl bg-[#1A1A1C] ${
+                    !isAdmin ? "locked-blur" : ""
+                  }`}
+                >
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-16 h-16 rounded-full metallic-gradient flex items-center justify-center">
                       <Share2 className="w-8 h-8 text-[#1A1A1C]" />
@@ -101,14 +113,17 @@ export default function CoreTools() {
                   </div>
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center bg-[#1A1A1C]/50 rounded-2xl">
-                  <button
-                    onClick={() => handleUnlock("Demo Video")}
-                    className="btn-outline px-6 py-3 rounded-full"
-                  >
-                    Unlock to Watch
-                  </button>
-                </div>
+                {/* ✅ Overlay only for NON-admins */}
+                {!isAdmin && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#1A1A1C]/50 rounded-2xl">
+                    <button
+                      onClick={() => handleUnlock("Demo Video")}
+                      className="btn-outline px-6 py-3 rounded-full"
+                    >
+                      Unlock to Watch
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -147,11 +162,13 @@ export default function CoreTools() {
       </section>
 
       {/* ================= SUBSCRIBE MODAL ================= */}
-      <SubscribeModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        toolName={selectedTool}
-      />
+      {!isAdmin && (
+        <SubscribeModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          toolName={selectedTool}
+        />
+      )}
     </div>
   );
 }
