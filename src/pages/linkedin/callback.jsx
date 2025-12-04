@@ -22,7 +22,7 @@ export default function LinkedInCallback() {
 
         // ⭐ REDIRECT DIRECTLY TO CREATE POST
         setTimeout(() => {
-          navigate("/dashboard"); 
+          navigate("/apps/social-automation"); 
         }, 800);
 
       } catch (err) {

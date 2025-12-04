@@ -10,28 +10,24 @@ import {
 
 import {
   initiateLinkedInAuth,
-  getLinkedInAuthData,
   clearLinkedInAuthData,
   isLinkedInConnected
 } from "@/utils/linkedinOAuth";
 
 import {
   initiateFacebookAuth,
-  getFacebookAuthData,
   clearFacebookAuthData,
   isFacebookConnected
 } from "@/utils/facebookOAuth";
 
 import {
   initiateInstagramAuth,
-  getInstagramAuthData,
   clearInstagramAuthData,
   isInstagramConnected
 } from "@/utils/instagramOAuth";
 
 import {
   initiateTikTokAuth,
-  getTikTokAuthData,
   clearTikTokAuthData,
   isTikTokConnected
 } from "@/utils/tiktokOAuth";
@@ -61,86 +57,18 @@ type Platform = {
 };
 
 const ALL_PLATFORMS: Platform[] = [
-  {
-    id: "facebook",
-    name: "Facebook",
-    icon: Facebook,
-    connect: initiateFacebookAuth,
-    disconnect: clearFacebookAuthData,
-    isConnected: isFacebookConnected
-  },
-  {
-    id: "instagram",
-    name: "Instagram",
-    icon: Instagram,
-    connect: initiateInstagramAuth,
-    disconnect: clearInstagramAuthData,
-    isConnected: isInstagramConnected
-  },
-  {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: Linkedin,
-    connect: initiateLinkedInAuth,
-    disconnect: clearLinkedInAuthData,
-    isConnected: isLinkedInConnected
-  },
-  {
-    id: "tiktok",
-    name: "TikTok",
-    icon: Music,
-    connect: initiateTikTokAuth,
-    disconnect: clearTikTokAuthData,
-    isConnected: isTikTokConnected
-  },
-  {
-    id: "x",
-    name: "X (Twitter)",
-    icon: Twitter,
-    isConnected: () => false
-  },
-  {
-    id: "bluesky",
-    name: "Bluesky",
-    icon: Cloud,
-    isConnected: () => true
-  },
-  {
-    id: "pinterest",
-    name: "Pinterest",
-    icon: Pin,
-    isConnected: () => false
-  },
-  {
-    id: "youtube",
-    name: "YouTube",
-    icon: Youtube,
-    isConnected: () => false
-  },
-  {
-    id: "google_business",
-    name: "Google Business",
-    icon: MapPin,
-    isConnected: () => false
-  },
-  {
-    id: "reddit",
-    name: "Reddit",
-    icon: MessageCircle,
-    isConnected: () => false
-  },
-  {
-    id: "medium",
-    name: "Medium",
-    icon: FileText,
-    isConnected: () => false
-  },
-  {
-    id: "threads",
-    name: "Threads",
-    icon: AtSign,
-    isConnected: () => false
-  }
+  { id: "facebook", name: "Facebook", icon: Facebook, connect: initiateFacebookAuth, disconnect: clearFacebookAuthData, isConnected: isFacebookConnected },
+  { id: "instagram", name: "Instagram", icon: Instagram, connect: initiateInstagramAuth, disconnect: clearInstagramAuthData, isConnected: isInstagramConnected },
+  { id: "linkedin", name: "LinkedIn", icon: Linkedin, connect: initiateLinkedInAuth, disconnect: clearLinkedInAuthData, isConnected: isLinkedInConnected },
+  { id: "tiktok", name: "TikTok", icon: Music, connect: initiateTikTokAuth, disconnect: clearTikTokAuthData, isConnected: isTikTokConnected },
+  { id: "x", name: "X (Twitter)", icon: Twitter, isConnected: () => false },
+  { id: "bluesky", name: "Bluesky", icon: Cloud, isConnected: () => true },
+  { id: "pinterest", name: "Pinterest", icon: Pin, isConnected: () => false },
+  { id: "youtube", name: "YouTube", icon: Youtube, isConnected: () => false },
+  { id: "google_business", name: "Google Business", icon: MapPin, isConnected: () => false },
+  { id: "reddit", name: "Reddit", icon: MessageCircle, isConnected: () => false },
+  { id: "medium", name: "Medium", icon: FileText, isConnected: () => false },
+  { id: "threads", name: "Threads", icon: AtSign, isConnected: () => false }
 ];
 
 export default function SocialMediaTool() {
@@ -162,7 +90,6 @@ export default function SocialMediaTool() {
 
   const togglePlatform = (id: string, connected: boolean) => {
     if (!connected) return;
-
     setSelectedPlatforms((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
@@ -171,7 +98,6 @@ export default function SocialMediaTool() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-
     setImageFile(f);
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(String(reader.result));
@@ -186,13 +112,8 @@ export default function SocialMediaTool() {
     form.append("post_mode", postMode);
     form.append("use_ai", aiEnhance ? "yes" : "no");
 
-    if (postMode === "schedule") {
-      form.append("scheduled_time", scheduledTime);
-    }
-
-    if (imageFile) {
-      form.append("image", imageFile);
-    }
+    if (postMode === "schedule") form.append("scheduled_time", scheduledTime);
+    if (imageFile) form.append("image", imageFile);
 
     const res = await fetch("https://scs-ltd.app.n8n.cloud/webhook/social-media", {
       method: "POST",
@@ -205,14 +126,11 @@ export default function SocialMediaTool() {
   const handlePublish = async () => {
     setErrorMsg(null);
 
-    if (!caption.trim())
-      return setErrorMsg("Caption is required.");
-
+    if (!caption.trim()) return setErrorMsg("Caption is required.");
     if (selectedPlatforms.length === 0)
       return setErrorMsg("Select at least one connected platform.");
 
     setLoading(true);
-
     try {
       await sendToBackend();
       setIsSuccess(true);
@@ -224,116 +142,26 @@ export default function SocialMediaTool() {
     } catch (err: any) {
       setErrorMsg(err.message);
     }
-
     setLoading(false);
   };
 
   if (!isLoaded)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading…
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
 
   if (!isSignedIn)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Login required
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center">Login required</div>;
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-[#1A1A1C] text-[#D6D7D8]">
       <div className="max-w-6xl mx-auto px-6">
 
-        <h1 className="text-3xl font-bold mb-8">
-          Social Media Automation
-        </h1>
+        <h1 className="text-3xl font-bold mb-8">Social Media Automation</h1>
 
-        {/* ================= PLATFORMS ================= */}
-        <div className="glass-card rounded-2xl p-6 mb-10">
-          <h2 className="text-lg font-semibold mb-6">
-            Select & Connect Platforms
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {ALL_PLATFORMS.map((p) => {
-              const connected = p.isConnected();
-              const selected = isSelected(p.id);
-              const Icon = p.icon;
-
-              return (
-                <div
-                  key={p.id}
-                  className={`rounded-xl border p-4 transition ${
-                    connected
-                      ? selected
-                        ? "border-[#E1C37A] bg-[#E1C37A]/10"
-                        : "border-[#3B3C3E] hover:border-[#E1C37A]/50"
-                      : "border-[#3B3C3E] opacity-50"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <button
-                      onClick={() =>
-                        togglePlatform(p.id, connected)
-                      }
-                      disabled={!connected}
-                      className="flex items-center gap-3 text-left"
-                    >
-                      <Icon className="w-5 h-5 text-[#E1C37A]" />
-                      <span className="font-medium">
-                        {p.name}
-                      </span>
-                      {selected && (
-                        <CheckCircle className="text-green-500 w-4 h-4" />
-                      )}
-                    </button>
-
-                    {p.connect && (
-                      <button
-                        onClick={() => {
-                          setLoadingPlatform(p.id);
-                          connected
-                            ? p.disconnect?.()
-                            : p.connect();
-                          setTimeout(() => setLoadingPlatform(null), 1200);
-                        }}
-                        className={`flex items-center gap-2 text-xs px-4 py-2 rounded-full ${
-                          connected
-                            ? "btn-outline"
-                            : "btn-gold"
-                        }`}
-                      >
-                        {loadingPlatform === p.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : connected ? (
-                          <>
-                            <Unlink className="w-4 h-4" />
-                            Disconnect
-                          </>
-                        ) : (
-                          <>
-                            <LinkIcon className="w-4 h-4" />
-                            Connect
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ================= POST CREATION ================= */}
+        {/* POST CREATION */}
         <div className="glass-card rounded-2xl p-6 space-y-6">
 
           <div>
-            <label className="block text-sm mb-2 text-[#A9AAAC]">
-              Post Caption
-            </label>
+            <label className="block text-sm mb-2 text-[#A9AAAC]">Post Caption</label>
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
@@ -342,26 +170,30 @@ export default function SocialMediaTool() {
             />
           </div>
 
+          {/* ✅ AI TOGGLE */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-[#A9AAAC]">AI Enhancement</span>
-            <input
-              type="checkbox"
-              checked={aiEnhance}
-              onChange={(e) => setAiEnhance(e.target.checked)}
-            />
+
+            <button
+              onClick={() => setAiEnhance(!aiEnhance)}
+              className={`relative w-14 h-7 rounded-full transition ${
+                aiEnhance ? "bg-[#E1C37A]" : "bg-[#3B3C3E]"
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-black transition ${
+                  aiEnhance ? "translate-x-7" : "translate-x-0"
+                }`}
+              />
+            </button>
           </div>
 
           <div>
-            <label className="block text-sm mb-2 text-[#A9AAAC]">
-              Upload Image
-            </label>
+            <label className="block text-sm mb-2 text-[#A9AAAC]">Upload Image</label>
             <div className="border-2 border-dashed border-[#3B3C3E] p-4 rounded-lg text-center">
               {imagePreview ? (
                 <div className="relative inline-block">
-                  <img
-                    src={imagePreview}
-                    className="max-h-48 rounded-lg"
-                  />
+                  <img src={imagePreview} className="max-h-48 rounded-lg" />
                   <button
                     onClick={() => {
                       setImageFile(null);
@@ -374,16 +206,9 @@ export default function SocialMediaTool() {
                 </div>
               ) : (
                 <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                  />
+                  <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
                   <Upload className="mx-auto mb-2 text-[#A9AAAC]" />
-                  <p className="text-sm text-[#A9AAAC]">
-                    Click to upload
-                  </p>
+                  <p className="text-sm text-[#A9AAAC]">Click to upload</p>
                 </label>
               )}
             </div>
