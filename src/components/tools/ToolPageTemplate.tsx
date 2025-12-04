@@ -1,3 +1,4 @@
+// src/components/tools/ToolPageTemplate.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,7 +9,7 @@ import {
   Check,
   Play,
   Zap,
-  LogIn
+  LogIn,
 } from "lucide-react";
 import { PLAN_HIERARCHY } from "./toolsConfig";
 import SectionHeading from "../shared/SectionHeading";
@@ -26,9 +27,14 @@ export interface ToolType {
   category: "Core" | "Corporate";
   planRequired: "Starter" | "Growth" | "Enterprise";
   color: string;
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  icon: React.ComponentType<{
+    className?: string;
+    style?: React.CSSProperties;
+  }>;
   mainBenefits: string[];
   howItWorks: { step: string; desc: string }[];
+  /** Optional route to the live in-app tool (e.g. /apps/social-automation) */
+  appRoute?: string;
 }
 
 interface ToolPageTemplateProps {
@@ -42,34 +48,95 @@ interface ToolPageTemplateProps {
 export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
   const { user, isAuthenticated, hasAccessToTool, login } = useSubscription();
 
-  const userPlan = user?.subscription_plan || "none";
-  const userPlanLevel = PLAN_HIERARCHY[userPlan] || 0;
-  const requiredPlanLevel = PLAN_HIERARCHY[tool.planRequired] || 0;
-
+  const userPlan = (user?.subscription_plan as string) || "none";
   const hasAccess = hasAccessToTool(tool.planRequired);
 
   const categoryColors = {
     Core: {
       bg: "bg-[#D6D7D8]/10",
       text: "text-[#D6D7D8]",
-      border: "border-[#D6D7D8]/20"
+      border: "border-[#D6D7D8]/20",
     },
     Corporate: {
       bg: "bg-[#E1C37A]/10",
       text: "text-[#E1C37A]",
-      border: "border-[#E1C37A]/20"
-    }
-  };
+      border: "border-[#E1C37A]/20",
+    },
+  } as const;
 
   const planColors: Record<string, string> = {
     Starter: "#4ADE80",
     Growth: "#60A5FA",
-    Enterprise: "#E1C37A"
+    Enterprise: "#E1C37A",
+  };
+
+  const planColor = planColors[tool.planRequired] || "#E1C37A";
+
+  // You can open the live app only if:
+  // - you have access AND
+  // - the tool actually has an appRoute defined
+  const canOpenApp = hasAccess && !!tool.appRoute;
+
+  /* ----------------------------
+     CTA block, kept very defensive
+  ---------------------------- */
+  const renderPrimaryCta = () => {
+    if (canOpenApp) {
+      // ✅ Has access AND real app route → go to app
+      return (
+        <Link
+          to={tool.appRoute as string}
+          className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2"
+        >
+          <Play className="w-5 h-5" />
+          Open Tool
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+      );
+    }
+
+    if (!isAuthenticated) {
+      // ✅ Not signed in → send to login, then back here
+      return (
+        <button
+          onClick={() => login(window.location.href)}
+          className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2"
+        >
+          <LogIn className="w-5 h-5" />
+          Sign In to Unlock
+          <ArrowRight className="w-5 h-5" />
+        </button>
+      );
+    }
+
+    if (!hasAccess) {
+      // ✅ Signed in but plan too low → go to Pricing
+      return (
+        <Link
+          to="/pricing"
+          className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2"
+        >
+          <Lock className="w-5 h-5" />
+          Unlock With {tool.planRequired}
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+      );
+    }
+
+    // ✅ Has access but no appRoute yet → just show disabled button
+    return (
+      <button
+        className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2 opacity-60 cursor-not-allowed"
+        disabled
+      >
+        <Play className="w-5 h-5" />
+        App Coming Soon
+      </button>
+    );
   };
 
   return (
     <div className="min-h-screen pt-24 pb-20">
-
       {/* ================= HERO ================= */}
       <section className="relative py-16 overflow-hidden">
         <div className="absolute inset-0">
@@ -110,7 +177,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
               className="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center mb-8"
               style={{
                 background: `linear-gradient(135deg, ${tool.color}30, ${tool.color}10)`,
-                border: `1px solid ${tool.color}40`
+                border: `1px solid ${tool.color}40`,
               }}
             >
               <tool.icon className="w-10 h-10" style={{ color: tool.color }} />
@@ -128,9 +195,9 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
               <span
                 className="px-4 py-2 rounded-full text-sm font-medium border"
                 style={{
-                  backgroundColor: `${planColors[tool.planRequired]}15`,
-                  borderColor: `${planColors[tool.planRequired]}30`,
-                  color: planColors[tool.planRequired]
+                  backgroundColor: `${planColor}15`,
+                  borderColor: `${planColor}30`,
+                  color: planColor,
                 }}
               >
                 Requires: {tool.planRequired} Plan
@@ -144,35 +211,8 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
               )}
             </div>
 
-            {/* CTA */}
-            {hasAccess ? (
-  <Link
-    to={tool.appRoute}          // ✅ REAL APP REDIRECT
-    className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2"
-  >
-    <Play className="w-5 h-5" />
-    Open Tool
-    <ArrowRight className="w-5 h-5" />
-  </Link>
-) : !isAuthenticated ? (
-              <button
-                onClick={() => login(window.location.href)}
-                className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2"
-              >
-                <LogIn className="w-5 h-5" />
-                Sign In to Unlock
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            ) : (
-              <Link
-                to="/pricing"
-                className="btn-gold px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2"
-              >
-                <Lock className="w-5 h-5" />
-                Unlock With {tool.planRequired}
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            )}
+            {/* CTA block */}
+            {renderPrimaryCta()}
           </motion.div>
         </div>
       </section>
@@ -209,7 +249,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center"
                   style={{
-                    background: `linear-gradient(135deg, ${tool.color}, ${tool.color}80)`
+                    background: `linear-gradient(135deg, ${tool.color}, ${tool.color}80)`,
                   }}
                 >
                   <Check className="w-4 h-4 text-[#1A1A1C]" />
@@ -231,7 +271,9 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
             className="glass-card-gold rounded-3xl p-8 text-center glow-gold"
           >
             <h3 className="text-2xl font-bold text-white mb-4">
-              {hasAccess ? "You have access!" : `Unlock with ${tool.planRequired}`}
+              {hasAccess
+                ? "You have access!"
+                : `Unlock with ${tool.planRequired}`}
             </h3>
 
             {!hasAccess ? (
@@ -243,10 +285,21 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
                 Upgrade Now
                 <ArrowRight className="w-5 h-5" />
               </Link>
-            ) : (
-              <button className="btn-gold px-8 py-4 rounded-full font-semibold inline-flex items-center gap-2">
+            ) : canOpenApp ? (
+              <Link
+                to={tool.appRoute as string}
+                className="btn-gold px-8 py-4 rounded-full font-semibold inline-flex items-center gap-2"
+              >
                 <Play className="w-5 h-5" />
                 Launch Tool
+              </Link>
+            ) : (
+              <button
+                className="btn-gold px-8 py-4 rounded-full font-semibold inline-flex items-center gap-2 opacity-60 cursor-not-allowed"
+                disabled
+              >
+                <Play className="w-5 h-5" />
+                App Coming Soon
               </button>
             )}
           </motion.div>
