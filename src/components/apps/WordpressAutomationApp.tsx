@@ -20,17 +20,15 @@ export default function WordpressAutomationApp() {
   const [loading, setLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
 
-  const WEBHOOK_URL =
-    "https://scs-ltd.app.n8n.cloud/webhook/wordpress-automation";
+  const WEBHOOK_URL = "https://scs-ltd.app.n8n.cloud/webhook/wordpress-automation";
 
   const handleLogin = async () => {
     if (!wpUrl || !wpUsername || !wpPassword) {
-      toast({
+      return toast({
         variant: "destructive",
         title: "Missing Fields",
-        description: "Please fill out all WordPress login fields.",
+        description: "Please fill all login fields.",
       });
-      return;
     }
 
     setLoginLoading(true);
@@ -39,10 +37,7 @@ export default function WordpressAutomationApp() {
       const response = await fetch(`${wpUrl}/wp-json/jwt-auth/v1/token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: wpUsername,
-          password: wpPassword,
-        }),
+        body: JSON.stringify({ username: wpUsername, password: wpPassword }),
       });
 
       const data = await response.json();
@@ -52,10 +47,7 @@ export default function WordpressAutomationApp() {
         localStorage.setItem("wp_token", data.token);
         localStorage.setItem("wp_url", wpUrl);
 
-        toast({
-          title: "Logged In",
-          description: "You are now authenticated with WordPress.",
-        });
+        toast({ title: "Logged In", description: "Connected to WordPress." });
       } else {
         toast({
           variant: "destructive",
@@ -67,7 +59,7 @@ export default function WordpressAutomationApp() {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Unable to connect to your WordPress site.",
+        description: "Unable to connect to WordPress.",
       });
     }
 
@@ -77,42 +69,33 @@ export default function WordpressAutomationApp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!wpToken || !wpUrl) {
-      toast({
+    if (!wpToken) {
+      return toast({
         variant: "destructive",
         title: "Not Logged In",
-        description: "Please log into WordPress first.",
+        description: "Login to WordPress first.",
       });
-      return;
     }
 
     setLoading(true);
 
-    const formData = new FormData();
-    formData.append("Your Blog Post Content", content);
-    formData.append("Number of Sections", String(sections));
-    formData.append("wp_token", wpToken);
-    formData.append("wp_url", wpUrl);
-
-    if (image) formData.append("Gallery_Images", image);
+    const form = new FormData();
+    form.append("Your Blog Post Content", content);
+    form.append("Number of Sections", String(sections));
+    form.append("wp_token", wpToken);
+    form.append("wp_url", wpUrl);
+    if (image) form.append("Gallery_Images", image);
 
     try {
-      await fetch(WEBHOOK_URL, {
-        method: "POST",
-        body: formData,
-      });
+      await fetch(WEBHOOK_URL, { method: "POST", body: form });
 
-      toast({
-        title: "Submitted!",
-        description: "Your content has been sent to automation.",
-      });
-
+      toast({ title: "Submitted!", description: "Sent to automation." });
       setContent("");
     } catch {
       toast({
         variant: "destructive",
         title: "Submission Failed",
-        description: "Unable to send content to automation.",
+        description: "Unable to send content.",
       });
     }
 
@@ -121,8 +104,8 @@ export default function WordpressAutomationApp() {
 
   return (
     <ToastProvider>
-      <main className="w-full flex justify-center">
-        <div className="min-h-screen py-16 px-4 w-full max-w-2xl mx-auto">
+      <main className="w-full flex justify-center bg-[#1A1A1C] px-4">
+        <div className="w-full max-w-3xl mx-auto min-h-screen pt-10 pb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -146,7 +129,6 @@ export default function WordpressAutomationApp() {
                   value={wpUrl}
                   onChange={(e) => setWpUrl(e.target.value)}
                 />
-
                 <input
                   type="text"
                   placeholder="WordPress Username"
@@ -154,7 +136,6 @@ export default function WordpressAutomationApp() {
                   value={wpUsername}
                   onChange={(e) => setWpUsername(e.target.value)}
                 />
-
                 <input
                   type="password"
                   placeholder="WordPress Password"
@@ -170,7 +151,7 @@ export default function WordpressAutomationApp() {
                 >
                   {loginLoading ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" /> Logging In…
+                      <Loader2 className="w-5 h-5 animate-spin" /> Logging In...
                     </>
                   ) : (
                     <>
@@ -190,10 +171,9 @@ export default function WordpressAutomationApp() {
               <textarea
                 className="w-full p-4 rounded-xl bg-[#1A1A1C] border border-[#333] text-white"
                 rows={6}
-                placeholder="Write your content here..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                required
+                placeholder="Write your content here..."
               />
 
               <input
@@ -202,7 +182,6 @@ export default function WordpressAutomationApp() {
                 className="w-full p-4 rounded-xl bg-[#1A1A1C] border border-[#333] text-white"
                 value={sections}
                 onChange={(e) => setSections(Number(e.target.value))}
-                required
               />
 
               <input
@@ -219,7 +198,7 @@ export default function WordpressAutomationApp() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" /> Sending…
+                    <Loader2 className="w-5 h-5 animate-spin" /> Sending...
                   </>
                 ) : (
                   <>
