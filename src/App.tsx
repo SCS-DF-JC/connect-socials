@@ -163,15 +163,14 @@ const App = () => (
               }
             />
             <Route
-            path="/apps/wordpress-seo"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <WordpressAutomationApp />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+  path="/apps/wordpress-seo"
+  element={
+    <ProtectedRoute>
+      <WordpressAutomationApp />
+    </ProtectedRoute>
+  }
+/>
+
 
 
             {/* ✅ OAUTH */}
