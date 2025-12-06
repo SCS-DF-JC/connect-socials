@@ -54,6 +54,7 @@ import Login from "./pages/base44/Login";
 
 // ✅ Other
 import NotFound from "./pages/NotFound";
+import WordpressAutomationApp from "./components/apps/WordpressAutomationApp";
 
 const queryClient = new QueryClient();
 
@@ -161,6 +162,17 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+            path="/apps/wordpress-seo"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WordpressAutomationApp />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
 
             {/* ✅ OAUTH */}
             <Route path="/linkedin/callback" element={<ProtectedRoute><LinkedInCallback /></ProtectedRoute>} />

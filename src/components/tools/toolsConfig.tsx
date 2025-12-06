@@ -41,6 +41,7 @@ export const coreTools = [
     id: "wordpress-seo",
     name: "WordPress SEO Optimisation and Post",
     slug: "wordpress-seo",
+    appRoute: "/apps/wordpress-seo",
     category: "Core",
     shortDescription: "Optimize posts and publish SEO ready content to WordPress.",
     longDescription: "Transform your WordPress workflow with AI-powered SEO optimization. Automatically generate meta titles, descriptions, alt tags, and internal links. Publish perfectly optimized content directly to your WordPress site with one click.",
