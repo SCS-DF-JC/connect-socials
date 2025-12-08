@@ -543,7 +543,7 @@ export default function SocialMediaTool() {
                       <Video className="w-7 h-7 text-[#B6934C]" />
                     </div>
                   </div>
-                  <p className="text-[#D6D7D8] font-medium mb-2">Drop your image or video here</p>
+                  <p className="text-[#D6D7D8] font-medium mb-2">Drop your image here</p>
                   <p className="text-[#5B5C60] text-sm">or click to browse</p>
                 </div>
               )}
