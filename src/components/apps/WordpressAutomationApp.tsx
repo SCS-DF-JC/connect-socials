@@ -31,7 +31,7 @@ export default function WordpressAutomationApp() {
   const [loading, setLoading] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
 
-  const WEBHOOK_URL = "https://scs-ltd.app.n8n.cloud/webhook/wordpress-automation";
+  const WEBHOOK_URL = "https://scs-ltd.app.n8n.cloud/webhook/seo-content-publisher";
 
   /* -------------------- LOAD STORED SESSION -------------------- */
   useEffect(() => {
