@@ -220,28 +220,39 @@ export default function WordpressAutomationApp() {
                 </div>
 
                 {/* TONE + SECTIONS */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <select
-                    className="p-4 rounded-xl bg-[#1A1A1C] border border-[#333] text-white"
-                    value={tone}
-                    onChange={(e) => setTone(e.target.value)}
-                  >
-                    <option>Professional</option>
-                    <option>Friendly</option>
-                    <option>Bold</option>
-                    <option>Informative</option>
-                    <option>Humorous</option>
-                    <option>Custom</option>
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <input
-                    type="number"
-                    min={1}
-                    className="p-4 rounded-xl bg-[#1A1A1C] border border-[#333] text-white"
-                    value={sections}
-                    onChange={(e) => setSections(Number(e.target.value))}
-                  />
-                </div>
+  {/* CONTENT TONE */}
+  <div className="flex flex-col space-y-2">
+    <label className="text-sm text-gray-300">Content Tone</label>
+    <select
+      className="p-4 rounded-xl bg-[#1A1A1C] border border-[#333] text-white"
+      value={tone}
+      onChange={(e) => setTone(e.target.value)}
+    >
+      <option>Professional</option>
+      <option>Friendly</option>
+      <option>Bold</option>
+      <option>Informative</option>
+      <option>Humorous</option>
+      <option>Custom</option>
+    </select>
+  </div>
+
+  {/* NUMBER OF SECTIONS */}
+  <div className="flex flex-col space-y-2">
+    <label className="text-sm text-gray-300">Number of Sections</label>
+    <input
+      type="number"
+      min={1}
+      className="p-4 rounded-xl bg-[#1A1A1C] border border-[#333] text-white"
+      value={sections}
+      onChange={(e) => setSections(Number(e.target.value))}
+    />
+  </div>
+
+</div>
+
 
                 {/* IMAGE UPLOAD */}
                 <input
