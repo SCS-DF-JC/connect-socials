@@ -24,11 +24,8 @@ import {
   Image as ImageIcon,
   Video,
   Clock,
-  Eye,
-  Heart,
-  TrendingUp,
-  TrendingDown,
-  LayoutDashboard
+  LayoutDashboard,
+  Edit2
 } from "lucide-react";
 
 import {
@@ -55,6 +52,13 @@ import {
   isTikTokConnected
 } from "@/utils/tiktokOAuth";
 
+import {
+  saveBlueskyCredentials,
+  getBlueskyCredentials,
+  clearBlueskyCredentials,
+  isBlueskyConnected
+} from "@/utils/blueskyOAuth";
+
 type Platform = {
   id: string;
   name: string;
@@ -63,89 +67,6 @@ type Platform = {
   disconnect?: () => void;
   isConnected: () => boolean;
 };
-
-const ALL_PLATFORMS: Platform[] = [
-  {
-    id: "facebook",
-    name: "Facebook",
-    icon: Facebook,
-    connect: initiateFacebookAuth,
-    disconnect: clearFacebookAuthData,
-    isConnected: isFacebookConnected
-  },
-  {
-    id: "instagram",
-    name: "Instagram",
-    icon: Instagram,
-    connect: initiateInstagramAuth,
-    disconnect: clearInstagramAuthData,
-    isConnected: isInstagramConnected
-  },
-  {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: Linkedin,
-    connect: initiateLinkedInAuth,
-    disconnect: clearLinkedInAuthData,
-    isConnected: isLinkedInConnected
-  },
-  {
-    id: "tiktok",
-    name: "TikTok",
-    icon: Music,
-    connect: initiateTikTokAuth,
-    disconnect: clearTikTokAuthData,
-    isConnected: isTikTokConnected
-  },
-  {
-    id: "x",
-    name: "X (Twitter)",
-    icon: Twitter,
-    isConnected: () => false
-  },
-  {
-    id: "bluesky",
-    name: "Bluesky",
-    icon: Cloud,
-    isConnected: () => false
-  },
-  {
-    id: "pinterest",
-    name: "Pinterest",
-    icon: Pin,
-    isConnected: () => false
-  },
-  {
-    id: "youtube",
-    name: "YouTube",
-    icon: Youtube,
-    isConnected: () => false
-  },
-  {
-    id: "google_business",
-    name: "Google Business",
-    icon: MapPin,
-    isConnected: () => false
-  },
-  {
-    id: "reddit",
-    name: "Reddit",
-    icon: MessageCircle,
-    isConnected: () => false
-  },
-  {
-    id: "medium",
-    name: "Medium",
-    icon: FileText,
-    isConnected: () => false
-  },
-  {
-    id: "threads",
-    name: "Threads",
-    icon: AtSign,
-    isConnected: () => false
-  }
-];
 
 const platformColors: Record<string, string> = {
   facebook: '#1877F2',
@@ -179,6 +100,13 @@ export default function SocialMediaTool() {
   const [loadingPlatform, setLoadingPlatform] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Bluesky modal state
+  const [showBlueskyModal, setShowBlueskyModal] = useState(false);
+  const [blueskyUsername, setBlueskyUsername] = useState("");
+  const [blueskyPassword, setBlueskyPassword] = useState("");
+  const [blueskyError, setBlueskyError] = useState("");
+  const [isEditingBluesky, setIsEditingBluesky] = useState(false);
+
   const gridRef = useRef<HTMLDivElement>(null);
   const [highlightStyle, setHighlightStyle] = useState({
     opacity: 0,
@@ -186,6 +114,134 @@ export default function SocialMediaTool() {
     width: 0,
     height: 0,
   });
+
+  const handleBlueskyConnect = () => {
+    const credentials = getBlueskyCredentials();
+    if (credentials?.connected && !isEditingBluesky) {
+      setIsEditingBluesky(true);
+      setBlueskyUsername(credentials.username);
+      setBlueskyPassword(credentials.password);
+    } else {
+      setIsEditingBluesky(false);
+      setBlueskyUsername("");
+      setBlueskyPassword("");
+    }
+    setBlueskyError("");
+    setShowBlueskyModal(true);
+  };
+
+  const handleBlueskyDisconnect = () => {
+    clearBlueskyCredentials();
+    setLoadingPlatform(null);
+    setBlueskyUsername("");
+    setBlueskyPassword("");
+    setIsEditingBluesky(false);
+  };
+
+  const handleBlueskySubmit = () => {
+    setBlueskyError("");
+
+    if (!blueskyUsername.trim()) {
+      setBlueskyError("Username is required");
+      return;
+    }
+
+    if (!blueskyPassword.trim()) {
+      setBlueskyError("Password is required");
+      return;
+    }
+
+    saveBlueskyCredentials(blueskyUsername.trim(), blueskyPassword.trim());
+    setShowBlueskyModal(false);
+    setBlueskyUsername("");
+    setBlueskyPassword("");
+    setIsEditingBluesky(false);
+  };
+
+  const ALL_PLATFORMS: Platform[] = [
+    {
+      id: "facebook",
+      name: "Facebook",
+      icon: Facebook,
+      connect: initiateFacebookAuth,
+      disconnect: clearFacebookAuthData,
+      isConnected: isFacebookConnected
+    },
+    {
+      id: "instagram",
+      name: "Instagram",
+      icon: Instagram,
+      connect: initiateInstagramAuth,
+      disconnect: clearInstagramAuthData,
+      isConnected: isInstagramConnected
+    },
+    {
+      id: "linkedin",
+      name: "LinkedIn",
+      icon: Linkedin,
+      connect: initiateLinkedInAuth,
+      disconnect: clearLinkedInAuthData,
+      isConnected: isLinkedInConnected
+    },
+    {
+      id: "tiktok",
+      name: "TikTok",
+      icon: Music,
+      connect: initiateTikTokAuth,
+      disconnect: clearTikTokAuthData,
+      isConnected: isTikTokConnected
+    },
+    {
+      id: "bluesky",
+      name: "Bluesky",
+      icon: Cloud,
+      connect: handleBlueskyConnect,
+      disconnect: handleBlueskyDisconnect,
+      isConnected: isBlueskyConnected
+    },
+    {
+      id: "x",
+      name: "X (Twitter)",
+      icon: Twitter,
+      isConnected: () => false
+    },
+    {
+      id: "pinterest",
+      name: "Pinterest",
+      icon: Pin,
+      isConnected: () => false
+    },
+    {
+      id: "youtube",
+      name: "YouTube",
+      icon: Youtube,
+      isConnected: () => false
+    },
+    {
+      id: "google_business",
+      name: "Google Business",
+      icon: MapPin,
+      isConnected: () => false
+    },
+    {
+      id: "reddit",
+      name: "Reddit",
+      icon: MessageCircle,
+      isConnected: () => false
+    },
+    {
+      id: "medium",
+      name: "Medium",
+      icon: FileText,
+      isConnected: () => false
+    },
+    {
+      id: "threads",
+      name: "Threads",
+      icon: AtSign,
+      isConnected: () => false
+    }
+  ];
 
   const handleCardMouseEnter = useCallback((e: React.MouseEvent) => {
     const card = e.currentTarget;
@@ -252,6 +308,14 @@ export default function SocialMediaTool() {
       form.append("image", imageFile);
     }
 
+    if (selectedPlatforms.includes("bluesky")) {
+      const blueskyCredentials = getBlueskyCredentials();
+      if (blueskyCredentials) {
+        form.append("bluesky_username", blueskyCredentials.username);
+        form.append("bluesky_password", blueskyCredentials.password);
+      }
+    }
+
     const res = await fetch("https://scs-ltd.app.n8n.cloud/webhook/social-media", {
       method: "POST",
       body: form
@@ -304,12 +368,85 @@ export default function SocialMediaTool() {
 
   return (
     <div className="min-h-screen pt-24 pb-20 bg-[#1A1A1C] text-[#D6D7D8]">
-      {/* Background Glows */}
       <div className="fixed top-1/4 -left-32 w-[500px] h-[500px] bg-[#E1C37A]/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="fixed bottom-1/4 -right-32 w-[400px] h-[400px] bg-[#B6934C]/10 rounded-full blur-[150px] pointer-events-none" />
 
+      {showBlueskyModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#3B3C3E] rounded-2xl p-8 max-w-md w-full border border-white/10 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-[#0085FF]/20 flex items-center justify-center">
+                  <Cloud className="w-6 h-6 text-[#0085FF]" />
+                </div>
+                <h2 className="text-xl font-bold text-[#D6D7D8]">
+                  {isEditingBluesky ? "Edit Bluesky" : "Connect Bluesky"}
+                </h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowBlueskyModal(false);
+                  setBlueskyError("");
+                  setIsEditingBluesky(false);
+                }}
+                className="w-8 h-8 rounded-lg bg-[#3B3C3E] hover:bg-[#4B4C4E] flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-[#A9AAAC]" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#D6D7D8] mb-2">
+                  Username or Email
+                </label>
+                <input
+                  type="text"
+                  value={blueskyUsername}
+                  onChange={(e) => setBlueskyUsername(e.target.value)}
+                  placeholder="username.bsky.social"
+                  className="w-full rounded-xl bg-[#3B3C3E]/50 border border-white/10 p-3 text-[#D6D7D8] placeholder:text-[#5B5C60] focus:border-[#0085FF]/50 focus:ring-2 focus:ring-[#0085FF]/20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#D6D7D8] mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={blueskyPassword}
+                  onChange={(e) => setBlueskyPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl bg-[#3B3C3E]/50 border border-white/10 p-3 text-[#D6D7D8] placeholder:text-[#5B5C60] focus:border-[#0085FF]/50 focus:ring-2 focus:ring-[#0085FF]/20"
+                />
+              </div>
+
+              {blueskyError && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {blueskyError}
+                </div>
+              )}
+
+              <div className="bg-[#0085FF]/10 border border-[#0085FF]/20 rounded-lg p-3">
+                <p className="text-sm text-[#A9AAAC]">
+                  💡 Use your Bluesky username (e.g., username.bsky.social) and password
+                </p>
+              </div>
+
+              <button
+                onClick={handleBlueskySubmit}
+                className="w-full py-3 px-6 rounded-full bg-gradient-to-r from-[#0085FF] to-[#0066CC] text-white font-medium hover:shadow-[0_0_20px_rgba(0,133,255,0.3)] transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-5 h-5" />
+                {isEditingBluesky ? "Update Credentials" : "Connect"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header with Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#E1C37A] to-[#B6934C] flex items-center justify-center">
@@ -351,7 +488,6 @@ export default function SocialMediaTool() {
           </div>
         </div>
 
-        {/* Success Message */}
         {isSuccess && (
           <div className="mb-6 p-4 rounded-xl bg-[#E1C37A]/10 border border-[#E1C37A]/20 flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-400" />
@@ -359,7 +495,6 @@ export default function SocialMediaTool() {
           </div>
         )}
 
-        {/* Error Message */}
         {errorMsg && (
           <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
             {errorMsg}
@@ -368,7 +503,6 @@ export default function SocialMediaTool() {
 
         {activeTab === 'dashboard' ? (
           <>
-            {/* Connected Accounts Header */}
             <div className="flex items-center gap-3 mb-4">
               <LinkIcon className="w-5 h-5 text-[#E1C37A]" />
               <h3 className="text-lg font-semibold text-[#D6D7D8]">Connected Accounts</h3>
@@ -377,7 +511,6 @@ export default function SocialMediaTool() {
               </span>
             </div>
 
-            {/* Platform Grid with Hover Effect */}
             <div
               ref={gridRef}
               className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
@@ -416,11 +549,25 @@ export default function SocialMediaTool() {
                       >
                         <Icon className="w-6 h-6" style={{ color }} />
                       </div>
-                      {connected && (
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#E1C37A] to-[#B6934C] flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-[#1A1A1C]" />
-                        </div>
-                      )}
+                      <div className="flex gap-2">
+                        {connected && (
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#E1C37A] to-[#B6934C] flex items-center justify-center">
+                            <CheckCircle className="w-4 h-4 text-[#1A1A1C]" />
+                          </div>
+                        )}
+                        {connected && p.id === "bluesky" && (
+                          <button
+                            onClick={() => {
+                              setIsEditingBluesky(true);
+                              handleBlueskyConnect();
+                            }}
+                            className="w-6 h-6 rounded-full bg-[#E1C37A]/20 flex items-center justify-center hover:bg-[#E1C37A]/30 transition-colors"
+                            title="Edit credentials"
+                          >
+                            <Edit2 className="w-3 h-3 text-[#E1C37A]" />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <h3 className="text-[#D6D7D8] font-semibold text-lg mb-1">{p.name}</h3>
@@ -463,7 +610,6 @@ export default function SocialMediaTool() {
           </>
         ) : (
           <div className="space-y-6">
-            {/* Platform Selection */}
             <div className="p-6 rounded-2xl bg-[#3B3C3E]/30 backdrop-blur-[20px] border border-white/5">
               <h3 className="text-sm font-semibold text-[#D6D7D8] mb-4">
                 Select Platforms
@@ -505,14 +651,13 @@ export default function SocialMediaTool() {
               </div>
             </div>
 
-            {/* Media Upload */}
             <div className="p-6 rounded-2xl bg-[#3B3C3E]/30 backdrop-blur-[20px] border border-white/5">
               <h3 className="text-sm font-semibold text-[#D6D7D8] mb-4">
                 Media <span className="text-[#5B5C60] font-normal">(optional)</span>
               </h3>
               {imagePreview ? (
                 <div className="relative">
-                  <img src={imagePreview} className="w-full rounded-lg max-h-64 object-contain bg-black/20" />
+                  <img src={imagePreview} className="w-full rounded-lg max-h-64 object-contain bg-black/20" alt="Preview" />
                   <button
                     onClick={() => {
                       setImageFile(null);
@@ -539,9 +684,6 @@ export default function SocialMediaTool() {
                     <div className="w-14 h-14 rounded-xl bg-[#E1C37A]/10 flex items-center justify-center">
                       <ImageIcon className="w-7 h-7 text-[#E1C37A]" />
                     </div>
-                    {/* <div className="w-14 h-14 rounded-xl bg-[#B6934C]/10 flex items-center justify-center">
-                      <Video className="w-7 h-7 text-[#B6934C]" />
-                    </div> */}
                   </div>
                   <p className="text-[#D6D7D8] font-medium mb-2">Drop your image here</p>
                   <p className="text-[#5B5C60] text-sm">or click to browse</p>

@@ -1,48 +1,36 @@
-// src/utils/blueskyOAuth.ts
+// Bluesky OAuth utilities
+const BLUESKY_STORAGE_KEY = "bluesky_credentials";
 
-export interface BlueskyAuthData {
-  did: string;
-  accessJwt: string;
-  refreshJwt: string;
-  handle: string;
+export interface BlueskyCredentials {
+  username: string;
+  password: string;
+  connected: boolean;
 }
 
-export const BLUESKY_AUTH_KEY = "bluesky_auth_data";
+export const saveBlueskyCredentials = (username: string, password: string): void => {
+  const credentials: BlueskyCredentials = {
+    username,
+    password,
+    connected: true,
+  };
+  localStorage.setItem(BLUESKY_STORAGE_KEY, JSON.stringify(credentials));
+};
 
-export function saveBlueskyAuthData(data: BlueskyAuthData) {
-  localStorage.setItem(BLUESKY_AUTH_KEY, JSON.stringify(data));
-}
+export const getBlueskyCredentials = (): BlueskyCredentials | null => {
+  const stored = localStorage.getItem(BLUESKY_STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+};
 
-export function getBlueskyAuthData(): BlueskyAuthData | null {
-  const raw = localStorage.getItem(BLUESKY_AUTH_KEY);
-  return raw ? JSON.parse(raw) : null;
-}
+export const clearBlueskyCredentials = (): void => {
+  localStorage.removeItem(BLUESKY_STORAGE_KEY);
+};
 
-export function clearBlueskyAuthData() {
-  localStorage.removeItem(BLUESKY_AUTH_KEY);
-}
-
-export function isBlueskyConnected(): boolean {
-  return !!localStorage.getItem(BLUESKY_AUTH_KEY);
-}
-
-// Start Bluesky "OAuth" (really just a POST to n8n)
-export async function initiateBlueskyAuth(username: string, appPassword: string, userId: string) {
-  const webhook = "https://scs-ltd.app.n8n.cloud/webhook/oauth-bluesky";
-
-  const res = await fetch(webhook, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username,
-      appPassword,
-      user_id: userId,
-    }),
-  });
-
-  if (!res.ok) throw new Error("Bluesky login failed");
-
-  const json = await res.json();
-  saveBlueskyAuthData(json);
-  return json;
-}
+export const isBlueskyConnected = (): boolean => {
+  const credentials = getBlueskyCredentials();
+  return credentials?.connected === true;
+};
