@@ -365,6 +365,7 @@ export default function SocialMediaTool() {
     );
 
   const connectedCount = ALL_PLATFORMS.filter(p => p.isConnected()).length;
+  const [showBlueskyInfo, setShowBlueskyInfo] = useState(false);
 
   return (
     <div className="min-h-screen pt-24 pb-20 bg-[#1A1A1C] text-[#D6D7D8]">
@@ -375,25 +376,68 @@ export default function SocialMediaTool() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#3B3C3E] rounded-2xl p-8 max-w-md w-full border border-white/10 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#0085FF]/20 flex items-center justify-center">
-                  <Cloud className="w-6 h-6 text-[#0085FF]" />
-                </div>
-                <h2 className="text-xl font-bold text-[#D6D7D8]">
-                  {isEditingBluesky ? "Edit Bluesky" : "Connect Bluesky"}
-                </h2>
-              </div>
-              <button
-                onClick={() => {
-                  setShowBlueskyModal(false);
-                  setBlueskyError("");
-                  setIsEditingBluesky(false);
-                }}
-                className="w-8 h-8 rounded-lg bg-[#3B3C3E] hover:bg-[#4B4C4E] flex items-center justify-center transition-colors"
-              >
-                <X className="w-5 h-5 text-[#A9AAAC]" />
-              </button>
-            </div>
+  <div className="flex items-center gap-3">
+    <div className="w-12 h-12 rounded-xl bg-[#0085FF]/20 flex items-center justify-center">
+      <Cloud className="w-6 h-6 text-[#0085FF]" />
+    </div>
+    <h2 className="text-xl font-bold text-[#D6D7D8]">
+      {isEditingBluesky ? "Edit Bluesky" : "Connect Bluesky"}
+    </h2>
+  </div>
+
+  <div className="flex items-center gap-2">
+    {/* INFO BUTTON — INSERTED HERE */}
+    <div className="relative">
+      <button
+        onClick={() => setShowBlueskyInfo(!showBlueskyInfo)}
+        className="w-8 h-8 rounded-lg bg-[#3B3C3E] hover:bg-[#4B4C4E] flex items-center justify-center transition-colors"
+        title="How to find username & App Password"
+      >
+        <Sparkles className="w-4 h-4 text-[#A9AAAC]" />
+      </button>
+
+      {showBlueskyInfo && (
+        <div className="absolute right-0 mt-2 w-80 p-4 rounded-xl bg-[#2C2C2E] border border-white/10 shadow-xl text-sm z-50">
+          <p className="text-[#D6D7D8] font-semibold mb-2">How to get your Bluesky login details</p>
+
+          <ul className="space-y-2 text-[#A9AAAC]">
+            <li>
+              <b>1. Username</b>:  
+              Open your Bluesky profile → your username ends with <code>.bsky.social</code>
+            </li>
+            <li>
+              <b>2. App Password</b>:  
+              Go to Bluesky → Settings → <b>App Passwords</b> → Create a new password.
+            </li>
+            <li>
+              <b>Do NOT use your main password.</b> Use only an App Password.
+            </li>
+          </ul>
+
+          <button
+            onClick={() => setShowBlueskyInfo(false)}
+            className="mt-3 px-3 py-1 rounded-lg bg-[#3B3C3E] text-[#D6D7D8] text-xs hover:bg-[#4B4C4E]"
+          >
+            Got it
+          </button>
+        </div>
+      )}
+    </div>
+
+    {/* CLOSE BUTTON */}
+    <button
+      onClick={() => {
+        setShowBlueskyModal(false);
+        setBlueskyError("");
+        setIsEditingBluesky(false);
+      }}
+      className="w-8 h-8 rounded-lg bg-[#3B3C3E] hover:bg-[#4B4C4E] flex items-center justify-center transition-colors"
+    >
+      <X className="w-5 h-5 text-[#A9AAAC]" />
+    </button>
+  </div>
+</div>
+
 
             <div className="space-y-4">
               <div>
