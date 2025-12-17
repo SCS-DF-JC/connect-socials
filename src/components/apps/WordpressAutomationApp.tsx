@@ -12,8 +12,8 @@ const ToastProvider = ({ children }: { children: ReactNode }) => <div>{children}
 const ToastViewport = () => <div />;
 
 /* 🔒 REQUIRED BACKEND CONSTANTS */
-const CLIENT_ID = "scs_ltd";
-const ENVIRONMENT = "TEST";
+const CLIENT_ID = "client_001";
+const ENVIRONMENT = "test";
 const WEBHOOK_TOKEN = "REPLACE_ME";
 
 export default function WordpressAutomationApp() {
