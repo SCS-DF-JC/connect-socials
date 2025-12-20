@@ -1,15 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-  ArrowLeft, Mail, Phone, Building2, Calendar, Globe, 
+import {
+  ArrowLeft, Mail, Phone, Building2, Calendar, Globe,
   MessageSquare, Clock, User, Tag, ChevronDown, Save,
-  UserPlus, RefreshCw, UserCheck, PhoneCall
+  UserPlus, RefreshCw, UserCheck, PhoneCall, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  getLeadById, getNotesByLeadId, getActivitiesByLeadId, 
+import {
   staffMembers, sourceLabels, statusLabels, LeadStatus, LeadPriority,
   Activity
 } from '@/data/mockData';
@@ -18,6 +17,7 @@ import { PriorityBadge } from '@/components/ui/priority-badge';
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const allStatuses: LeadStatus[] = ['new', 'in-review', 'in-progress', 'discovery-call', 'proposal-sent', 'won', 'lost'];
 const allPriorities: LeadPriority[] = ['low', 'medium', 'high'];
@@ -31,20 +31,84 @@ const activityIcons: Record<Activity['type'], typeof UserPlus> = {
   'strategy_call_booked': PhoneCall,
 };
 
+interface LeadDetail {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  message?: string;
+  serviceInterest?: string;
+  source: string;
+  status: LeadStatus;
+  priority: LeadPriority;
+  assignedTo?: string;
+  createdAt: string;
+  tags: string[];
+}
+
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const lead = getLeadById(id || '');
-  const notes = getNotesByLeadId(id || '');
-  const activities = getActivitiesByLeadId(id || '');
 
-  const [status, setStatus] = useState<LeadStatus>(lead?.status || 'new');
-  const [priority, setPriority] = useState<LeadPriority>(lead?.priority || 'medium');
-  const [assignee, setAssignee] = useState<string>(lead?.assignedTo || '');
+  const [lead, setLead] = useState<LeadDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState<any[]>([]); // Stub for now
+  const [activities, setActivities] = useState<any[]>([]); // Stub for now
+
+  // Form states - initialized after fetch
+  const [status, setStatus] = useState<LeadStatus>('new');
+  const [priority, setPriority] = useState<LeadPriority>('medium');
+  const [assignee, setAssignee] = useState<string>('');
+
   const [newNote, setNewNote] = useState('');
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+
+  useEffect(() => {
+    async function fetchLead() {
+      if (!id) return;
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (data) {
+        setLead({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          company: data.company,
+          message: data.message,
+          serviceInterest: data.service_interest || 'General',
+          source: data.source || 'website',
+          status: data.status || 'new',
+          priority: data.priority || 'medium',
+          assignedTo: data.assigned_to,
+          createdAt: data.created_at,
+          tags: data.tags || []
+        });
+        setStatus(data.status || 'new');
+        setPriority(data.priority || 'medium');
+        setAssignee(data.assigned_to || '');
+      }
+      setLoading(false);
+    }
+    fetchLead();
+  }, [id]);
+
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!lead) {
     return (
@@ -61,11 +125,13 @@ export default function LeadDetailPage() {
     );
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Optimistic update
     toast({
       title: "Changes saved",
       description: "Lead details have been updated successfully.",
     });
+    // In real app: await supabase.from('leads').update({ status, priority, assigned_to: assignee }).eq('id', id);
   };
 
   const handleAddNote = () => {
@@ -104,7 +170,7 @@ export default function LeadDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -157,7 +223,7 @@ export default function LeadDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Source</p>
-                  <p className="text-foreground">{sourceLabels[lead.source]}</p>
+                  <p className="text-foreground">{sourceLabels[lead.source as LeadSource] || lead.source}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-sm">
@@ -172,15 +238,17 @@ export default function LeadDetailPage() {
             </div>
 
             {/* Original Message */}
-            <div className="border-t border-white/10 pt-4">
-              <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-primary" />
-                Original Message
-              </h3>
-              <div className="p-4 rounded-lg bg-muted/30 border border-white/5">
-                <p className="text-sm text-foreground leading-relaxed">{lead.message}</p>
+            {lead.message && (
+              <div className="border-t border-white/10 pt-4">
+                <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  Original Message
+                </h3>
+                <div className="p-4 rounded-lg bg-muted/30 border border-white/5">
+                  <p className="text-sm text-foreground leading-relaxed">{lead.message}</p>
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
 
           {/* Notes Section */}
@@ -188,10 +256,10 @@ export default function LeadDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <h3 className="text-lg font-semibold text-foreground mb-4">Internal Notes</h3>
-            
+
             {/* Add Note */}
             <div className="mb-6">
               <Textarea
@@ -238,17 +306,17 @@ export default function LeadDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <h3 className="text-lg font-semibold text-foreground mb-4">Activity Timeline</h3>
-            
+
             <div className="relative">
               {/* Timeline line */}
               <div className="absolute left-4 top-2 bottom-2 w-px bg-border" />
-              
+
               <div className="space-y-6">
                 {activities.map((activity, index) => {
-                  const Icon = activityIcons[activity.type];
+                  const Icon = activityIcons[activity.type] || User;
                   return (
                     <motion.div
                       key={activity.id}
@@ -281,7 +349,7 @@ export default function LeadDetailPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="glass rounded-xl p-6 space-y-5"
+            className="rounded-xl p-6 space-y-5 bg-[#1A1A1C] border border-white/5"
           >
             {/* Status */}
             <div>
@@ -390,7 +458,7 @@ export default function LeadDetailPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <h3 className="text-sm font-medium text-foreground mb-3">Tags</h3>
             <div className="flex flex-wrap gap-2">

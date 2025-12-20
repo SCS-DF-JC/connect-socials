@@ -1,20 +1,32 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, X, ChevronDown, Calendar, Link as LinkIcon } from 'lucide-react';
+import { Search, Filter, X, ChevronDown, Calendar, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { 
-  strategyCalls, 
-  getLeadById, 
-  strategyCallStatusLabels, 
-  StrategyCallStatus 
+import {
+  strategyCallStatusLabels,
+  StrategyCallStatus
 } from '@/data/mockData';
 import { StrategyCallStatusBadge } from '@/components/ui/strategy-call-status-badge';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 const allStatuses: StrategyCallStatus[] = ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
+
+interface StrategyCall {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  preferredDateTime: string;
+  timeZone: string;
+  status: StrategyCallStatus;
+  source: string;
+  leadId?: string;
+  createdAt: string;
+}
 
 export function StrategyCallsTable() {
   const navigate = useNavigate();
@@ -22,12 +34,43 @@ export function StrategyCallsTable() {
   const [selectedStatuses, setSelectedStatuses] = useState<StrategyCallStatus[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
+  const [calls, setCalls] = useState<StrategyCall[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCalls() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('strategy_calls')
+        .select('*')
+        .order('preferred_time', { ascending: false }); // assuming preferred_time column
+
+      if (data) {
+        const mappedCalls: StrategyCall[] = data.map(dbCall => ({
+          id: dbCall.id,
+          name: dbCall.name,
+          email: dbCall.email,
+          phone: dbCall.phone,
+          preferredDateTime: dbCall.preferred_time || dbCall.created_at, // fallback
+          timeZone: dbCall.time_zone || 'UTC',
+          status: (dbCall.status as StrategyCallStatus) || 'pending',
+          source: dbCall.source || 'Website',
+          leadId: dbCall.lead_id,
+          createdAt: dbCall.created_at
+        }));
+        setCalls(mappedCalls);
+      }
+      setLoading(false);
+    }
+    fetchCalls();
+  }, []);
+
   const filteredCalls = useMemo(() => {
-    return strategyCalls.filter(call => {
+    return calls.filter(call => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           call.name.toLowerCase().includes(query) ||
           call.email.toLowerCase().includes(query);
         if (!matchesSearch) return false;
@@ -39,12 +82,12 @@ export function StrategyCallsTable() {
       }
 
       return true;
-    }).sort((a, b) => new Date(b.preferredDateTime).getTime() - new Date(a.preferredDateTime).getTime());
-  }, [searchQuery, selectedStatuses]);
+    });
+  }, [calls, searchQuery, selectedStatuses]);
 
   const toggleStatus = (status: StrategyCallStatus) => {
-    setSelectedStatuses(prev => 
-      prev.includes(status) 
+    setSelectedStatuses(prev =>
+      prev.includes(status)
         ? prev.filter(s => s !== status)
         : [...prev, status]
     );
@@ -98,7 +141,7 @@ export function StrategyCallsTable() {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="glass rounded-xl p-4 space-y-4"
+          className="rounded-xl p-4 space-y-4 bg-[#1A1A1C] border border-white/5"
         >
           {/* Status Filter */}
           <div>
@@ -141,96 +184,97 @@ export function StrategyCallsTable() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="glass rounded-xl overflow-hidden"
+        className="rounded-xl overflow-hidden bg-[#1A1A1C] border border-white/5"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
-                  Contact
-                </th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
-                  Date & Time
-                </th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
-                  Status
-                </th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
-                  Linked Lead
-                </th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
-                  Source
-                </th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
-                  Created
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredCalls.map((call, index) => {
-                const linkedLead = call.leadId ? getLeadById(call.leadId) : null;
-                
-                return (
-                  <motion.tr
-                    key={call.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 + index * 0.05 }}
-                    onClick={() => navigate(`/strategy-calls/${call.id}`)}
-                    className="row-hover cursor-pointer"
-                  >
-                    <td className="px-4 py-4">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{call.name}</p>
-                        <p className="text-xs text-muted-foreground">{call.email}</p>
-                        {call.phone && (
-                          <p className="text-xs text-tertiary">{call.phone}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-primary/70" />
+        {loading ? (
+          <div className="flex items-center justify-center p-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
+                    Contact
+                  </th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
+                    Date & Time
+                  </th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
+                    Status
+                  </th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
+                    Linked Lead
+                  </th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
+                    Source
+                  </th>
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">
+                    Created
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredCalls.map((call, index) => {
+                  return (
+                    <motion.tr
+                      key={call.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 + index * 0.05 }}
+                      onClick={() => navigate(`/strategy-calls/${call.id}`)}
+                      className="row-hover cursor-pointer"
+                    >
+                      <td className="px-4 py-4">
                         <div>
-                          <p className="text-sm text-foreground">
-                            {format(new Date(call.preferredDateTime), 'MMM d, yyyy')}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(call.preferredDateTime), 'h:mm a')} ({call.timeZone})
-                          </p>
+                          <p className="text-sm font-medium text-foreground">{call.name}</p>
+                          <p className="text-xs text-muted-foreground">{call.email}</p>
+                          {call.phone && (
+                            <p className="text-xs text-tertiary">{call.phone}</p>
+                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <StrategyCallStatusBadge status={call.status} />
-                    </td>
-                    <td className="px-4 py-4">
-                      {linkedLead ? (
-                        <div className="flex items-center gap-1.5 text-primary text-sm">
-                          <LinkIcon className="w-3.5 h-3.5" />
-                          <span>{linkedLead.name}</span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-primary/70" />
+                          <div>
+                            <p className="text-sm text-foreground">
+                              {format(new Date(call.preferredDateTime), 'MMM d, yyyy')}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(call.preferredDateTime), 'h:mm a')} ({call.timeZone})
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Unlinked</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-xs text-muted-foreground">{call.source}</span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(call.createdAt), 'MMM d, yyyy')}
-                      </span>
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredCalls.length === 0 && (
+                      </td>
+                      <td className="px-4 py-4">
+                        <StrategyCallStatusBadge status={call.status} />
+                      </td>
+                      <td className="px-4 py-4">
+                        {/* Placeholder for Lead link */}
+                        {call.leadId ? (
+                          <span className="text-sm text-primary">Linked</span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Unlinked</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="text-xs text-muted-foreground">{call.source}</span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(call.createdAt), 'MMM d, yyyy')}
+                        </span>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {!loading && filteredCalls.length === 0 && (
           <div className="p-12 text-center">
             <Calendar className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
             <p className="text-muted-foreground">No strategy calls match your filters</p>

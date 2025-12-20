@@ -1,35 +1,131 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
+import {
   ArrowLeft, Mail, Phone, Calendar, Clock, Globe,
   MessageSquare, User, ChevronDown, Save, Link as LinkIcon,
-  ExternalLink, RefreshCw
+  ExternalLink, RefreshCw, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  getStrategyCallById, getLeadById, leads, strategyCallStatusLabels,
+import {
+  strategyCallStatusLabels,
   StrategyCallStatus
 } from '@/data/mockData';
 import { StrategyCallStatusBadge } from '@/components/ui/strategy-call-status-badge';
 import { format, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const allStatuses: StrategyCallStatus[] = ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
+
+interface StrategyCallDetail {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  preferredDateTime: string;
+  timeZone: string;
+  status: StrategyCallStatus;
+  source: string;
+  leadId?: string;
+  createdAt: string;
+  updatedAt: string;
+  // notes: any[]; // Stub
+}
+
+interface LeadSimple {
+  id: string;
+  name: string;
+  email: string;
+  company?: string;
+}
 
 export default function StrategyCallDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const call = getStrategyCallById(id || '');
-  const linkedLead = call?.leadId ? getLeadById(call.leadId) : null;
 
-  const [status, setStatus] = useState<StrategyCallStatus>(call?.status || 'pending');
-  const [selectedLeadId, setSelectedLeadId] = useState<string | undefined>(call?.leadId);
+  const [call, setCall] = useState<StrategyCallDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [allLeads, setAllLeads] = useState<LeadSimple[]>([]);
+  const [linkedLead, setLinkedLead] = useState<LeadSimple | null>(null);
+
+  const [status, setStatus] = useState<StrategyCallStatus>('pending');
+  const [selectedLeadId, setSelectedLeadId] = useState<string | undefined>(undefined);
   const [newNote, setNewNote] = useState('');
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showLeadDropdown, setShowLeadDropdown] = useState(false);
+
+  // Notes stub
+  const [notes, setNotes] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!id) return;
+      setLoading(true);
+
+      // Fetch Call
+      const { data: callData, error } = await supabase
+        .from('strategy_calls')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (callData) {
+        setCall({
+          id: callData.id,
+          name: callData.name,
+          email: callData.email,
+          phone: callData.phone,
+          preferredDateTime: callData.preferred_time || callData.created_at,
+          timeZone: callData.time_zone || 'UTC',
+          status: callData.status || 'pending',
+          source: callData.source || 'Website',
+          leadId: callData.lead_id,
+          createdAt: callData.created_at,
+          updatedAt: callData.updated_at || callData.created_at,
+        });
+        setStatus(callData.status || 'pending');
+        setSelectedLeadId(callData.lead_id);
+
+        // Fetch Linked Lead if exists
+        if (callData.lead_id) {
+          const { data: leadData } = await supabase.from('leads').select('id, name, email, company').eq('id', callData.lead_id).single();
+          if (leadData) setLinkedLead(leadData);
+        }
+      }
+
+      // Fetch all leads for dropdown (optimize this later if needed)
+      const { data: leadsData } = await supabase.from('leads').select('id, name, email, company').order('created_at', { ascending: false });
+      if (leadsData) {
+        setAllLeads(leadsData);
+      }
+
+      setLoading(false);
+    }
+    fetchData();
+  }, [id]);
+
+  // Update linked lead object when selection changes
+  useEffect(() => {
+    if (selectedLeadId && allLeads.length > 0) {
+      const found = allLeads.find(l => l.id === selectedLeadId);
+      setLinkedLead(found || null);
+    } else {
+      // if just cleared
+      if (!selectedLeadId) setLinkedLead(null);
+    }
+  }, [selectedLeadId, allLeads]);
+
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!call) {
     return (
@@ -46,11 +142,12 @@ export default function StrategyCallDetailPage() {
     );
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     toast({
       title: "Changes saved",
       description: "Strategy call details have been updated successfully.",
     });
+    // await supabase.from('strategy_calls').update({ status, lead_id: selectedLeadId }).eq('id', id);
   };
 
   const handleAddNote = () => {
@@ -61,8 +158,6 @@ export default function StrategyCallDetailPage() {
     });
     setNewNote('');
   };
-
-  const selectedLead = selectedLeadId ? getLeadById(selectedLeadId) : null;
 
   return (
     <div className="space-y-6">
@@ -89,7 +184,7 @@ export default function StrategyCallDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -173,27 +268,27 @@ export default function StrategyCallDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <LinkIcon className="w-5 h-5 text-primary" />
               Linked Lead
             </h3>
-            
-            {selectedLead ? (
+
+            {linkedLead ? (
               <div className="p-4 rounded-lg bg-muted/30 border border-white/10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-foreground">{selectedLead.name}</p>
-                    <p className="text-xs text-muted-foreground">{selectedLead.email}</p>
-                    {selectedLead.company && (
-                      <p className="text-xs text-tertiary">{selectedLead.company}</p>
+                    <p className="text-sm font-medium text-foreground">{linkedLead.name}</p>
+                    <p className="text-xs text-muted-foreground">{linkedLead.email}</p>
+                    {linkedLead.company && (
+                      <p className="text-xs text-tertiary">{linkedLead.company}</p>
                     )}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/leads/${selectedLead.id}`)}
+                    onClick={() => navigate(`/leads/${linkedLead.id}`)}
                     className="border-primary/30 text-primary hover:bg-primary/10"
                   >
                     <ExternalLink className="w-4 h-4 mr-1" />
@@ -214,10 +309,10 @@ export default function StrategyCallDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <h3 className="text-lg font-semibold text-foreground mb-4">Internal Notes</h3>
-            
+
             {/* Add Note */}
             <div className="mb-6">
               <Textarea
@@ -237,7 +332,7 @@ export default function StrategyCallDetailPage() {
 
             {/* Notes List */}
             <div className="space-y-4">
-              {call.notes.map((note, index) => (
+              {notes.map((note, index) => (
                 <motion.div
                   key={note.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -253,7 +348,7 @@ export default function StrategyCallDetailPage() {
                   </div>
                 </motion.div>
               ))}
-              {call.notes.length === 0 && (
+              {notes.length === 0 && (
                 <p className="text-center text-muted-foreground py-4">No notes yet</p>
               )}
             </div>
@@ -264,13 +359,13 @@ export default function StrategyCallDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <h3 className="text-lg font-semibold text-foreground mb-4">Activity Timeline</h3>
-            
+
             <div className="relative">
               <div className="absolute left-4 top-2 bottom-2 w-px bg-border" />
-              
+
               <div className="space-y-6">
                 <motion.div
                   initial={{ opacity: 0, x: -10 }}
@@ -321,7 +416,7 @@ export default function StrategyCallDetailPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="glass rounded-xl p-6 space-y-5"
+            className="rounded-xl p-6 space-y-5 bg-[#1A1A1C] border border-white/5"
           >
             {/* Status */}
             <div>
@@ -361,7 +456,7 @@ export default function StrategyCallDetailPage() {
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-foreground">
-                      {selectedLead?.name || 'Select a lead...'}
+                      {linkedLead?.name || 'Select a lead...'}
                     </span>
                   </div>
                   <ChevronDown className={cn('w-4 h-4 text-muted-foreground transition-transform', showLeadDropdown && 'rotate-180')} />
@@ -374,7 +469,7 @@ export default function StrategyCallDetailPage() {
                     >
                       No link
                     </button>
-                    {leads.map(lead => (
+                    {allLeads.map(lead => (
                       <button
                         key={lead.id}
                         onClick={() => { setSelectedLeadId(lead.id); setShowLeadDropdown(false); }}
@@ -404,7 +499,7 @@ export default function StrategyCallDetailPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="glass rounded-xl p-6"
+            className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
           >
             <h3 className="text-sm font-medium text-foreground mb-3">Booking Info</h3>
             <div className="space-y-3 text-sm">

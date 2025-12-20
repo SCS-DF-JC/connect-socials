@@ -1,29 +1,82 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Filter, X, ChevronDown, Users, Calendar } from 'lucide-react';
+import { Search, Filter, X, ChevronDown, Users, Calendar, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { leads, staffMembers, getStaffById, sourceLabels, statusLabels, LeadStatus, LeadSource } from '@/data/mockData';
+import { staffMembers, getStaffById, sourceLabels, statusLabels, LeadStatus, LeadSource } from '@/data/mockData';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PriorityBadge } from '@/components/ui/priority-badge';
 import { StrategyCallsTable } from '@/components/admin/dashboard/StrategyCallsTable';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 const allStatuses: LeadStatus[] = ['new', 'in-review', 'in-progress', 'discovery-call', 'proposal-sent', 'won', 'lost'];
 const allSources: LeadSource[] = ['website', 'referral', 'manual', 'linkedin'];
+
+interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  message: string;
+  serviceInterest: string;
+  source: LeadSource;
+  status: LeadStatus;
+  priority: any; // fallback
+  assignedTo?: string;
+  createdAt: string; // mapped from created_at
+}
 
 export default function LeadsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'leads';
 
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<LeadStatus[]>([]);
   const [selectedSources, setSelectedSources] = useState<LeadSource[]>([]);
   const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    async function fetchLeads() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (data) {
+        // Map DB fields to UI interface
+        const mappedLeads: Lead[] = data.map(dbLead => ({
+          id: dbLead.id,
+          name: dbLead.name || 'Unknown',
+          email: dbLead.email || '',
+          phone: dbLead.phone,
+          company: dbLead.company,
+          message: dbLead.message || '',
+          serviceInterest: dbLead.service_interest || 'General', // assuming snake_case in db
+          source: (dbLead.source as LeadSource) || 'website',
+          status: (dbLead.status as LeadStatus) || 'new',
+          priority: dbLead.priority || 'medium',
+          assignedTo: dbLead.assigned_to,
+          createdAt: dbLead.created_at
+        }));
+        setLeads(mappedLeads);
+      }
+      setLoading(false);
+    }
+
+    if (activeTab === 'leads') {
+      fetchLeads();
+    }
+  }, [activeTab]);
 
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
@@ -51,7 +104,7 @@ export default function LeadsPage() {
       }
       return true;
     });
-  }, [searchQuery, selectedStatuses, selectedSources, selectedAssignee]);
+  }, [leads, searchQuery, selectedStatuses, selectedSources, selectedAssignee]);
 
   const toggleStatus = (status: LeadStatus) => {
     setSelectedStatuses(prev =>
@@ -237,51 +290,57 @@ export default function LeadsPage() {
             transition={{ duration: 0.4, delay: 0.2 }}
             className="rounded-xl overflow-hidden bg-[#1A1A1C] border border-white/5"
           >
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Lead</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Service Interest</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Source</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Status</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Priority</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Assigned To</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Created</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {filteredLeads.map((lead, index) => {
-                    const assignee = lead.assignedTo ? getStaffById(lead.assignedTo) : null;
-                    return (
-                      <motion.tr
-                        key={lead.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.3 + index * 0.05 }}
-                        onClick={() => navigate(`/leads/${lead.id}`)}
-                        className="row-hover cursor-pointer"
-                      >
-                        <td className="px-4 py-4">
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{lead.name}</p>
-                            <p className="text-xs text-muted-foreground">{lead.email}</p>
-                            {lead.company && <p className="text-xs text-tertiary">{lead.company}</p>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4"><span className="text-sm text-foreground">{lead.serviceInterest}</span></td>
-                        <td className="px-4 py-4"><span className="text-xs text-muted-foreground">{sourceLabels[lead.source]}</span></td>
-                        <td className="px-4 py-4"><StatusBadge status={lead.status} /></td>
-                        <td className="px-4 py-4"><PriorityBadge priority={lead.priority} /></td>
-                        <td className="px-4 py-4"><span className="text-sm text-muted-foreground">{assignee?.name || '—'}</span></td>
-                        <td className="px-4 py-4"><span className="text-sm text-muted-foreground">{format(new Date(lead.createdAt), 'MMM d, yyyy')}</span></td>
-                      </motion.tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            {filteredLeads.length === 0 && (
+            {loading ? (
+              <div className="flex items-center justify-center p-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Lead</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Service Interest</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Source</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Status</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Priority</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Assigned To</th>
+                      <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {filteredLeads.map((lead, index) => {
+                      const assignee = lead.assignedTo ? getStaffById(lead.assignedTo) : null;
+                      return (
+                        <motion.tr
+                          key={lead.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.3 + index * 0.05 }}
+                          onClick={() => navigate(`/leads/${lead.id}`)}
+                          className="row-hover cursor-pointer"
+                        >
+                          <td className="px-4 py-4">
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{lead.name}</p>
+                              <p className="text-xs text-muted-foreground">{lead.email}</p>
+                              {lead.company && <p className="text-xs text-tertiary">{lead.company}</p>}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4"><span className="text-sm text-foreground">{lead.serviceInterest}</span></td>
+                          <td className="px-4 py-4"><span className="text-xs text-muted-foreground">{sourceLabels[lead.source] || lead.source}</span></td>
+                          <td className="px-4 py-4"><StatusBadge status={lead.status} /></td>
+                          <td className="px-4 py-4"><PriorityBadge priority={lead.priority} /></td>
+                          <td className="px-4 py-4"><span className="text-sm text-muted-foreground">{assignee?.name || '—'}</span></td>
+                          <td className="px-4 py-4"><span className="text-sm text-muted-foreground">{format(new Date(lead.createdAt), 'MMM d, yyyy')}</span></td>
+                        </motion.tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {!loading && filteredLeads.length === 0 && (
               <div className="p-12 text-center">
                 <p className="text-muted-foreground">No leads match your filters</p>
                 <Button variant="ghost" size="sm" onClick={clearFilters} className="mt-2 text-primary">Clear filters</Button>
