@@ -5,6 +5,24 @@ import { ArrowRight, MoreHorizontal } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 
+const getStatusColor = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'new': return 'bg-[#3B82F6]/20 text-[#3B82F6]'; // Blue
+    case 'in-review': return 'bg-[#A855F7]/20 text-[#A855F7]'; // Purple
+    case 'in-progress': return 'bg-[#EAB308]/20 text-[#EAB308]'; // Gold
+    case 'discovery-call': return 'bg-[#14B8A6]/20 text-[#14B8A6]'; // Teal
+    case 'proposal-sent': return 'bg-[#EC4899]/20 text-[#EC4899]'; // Pink
+    case 'won': return 'bg-[#22C55E]/20 text-[#22C55E]'; // Green
+    case 'lost': return 'bg-[#EF4444]/20 text-[#EF4444]'; // Red
+    default: return 'bg-gray-500/20 text-gray-400';
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  if (!status) return 'New';
+  return status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
 export function RecentLeadsTable() {
   const [leads, setLeads] = useState<any[]>([]);
 
@@ -26,7 +44,7 @@ export function RecentLeadsTable() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.5 }}
-      className="glass rounded-xl overflow-hidden bg-[#1A1A1C] border border-white/5"
+      className="rounded-xl overflow-hidden bg-[#1A1A1C] border border-white/5"
     >
       <div className="p-6 flex items-center justify-between border-b border-white/10">
         <h3 className="text-lg font-semibold text-white">Recent Leads</h3>
@@ -37,13 +55,14 @@ export function RecentLeadsTable() {
 
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-white/5">
+          <thead className="bg-[#1A1A1C]">
             <tr>
-              <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Lead</th>
-              <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Status</th>
-              <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Score</th>
-              <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider px-6 py-3">Date</th>
-              <th className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">NAME</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">EMAIL</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">CREATED</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">STAGE</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">ASSIGNED TO</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-6 py-4">SOURCE</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -53,45 +72,36 @@ export function RecentLeadsTable() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 + index * 0.05 }}
-                className="hover:bg-white/5 transition-colors cursor-pointer"
+                className="hover:bg-white/5 transition-colors cursor-pointer bg-[#1A1A1C]"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white uppercase">
-                      {lead.name.substring(0, 2)}
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-white">{lead.name}</div>
-                      <div className="text-xs text-gray-400">{lead.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-500/10 text-blue-400">
-                    {lead.status || 'New'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="w-16 bg-gray-700 rounded-full h-1.5 mr-2">
-                      <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${lead.lead_score || 0}%` }}></div>
-                    </div>
-                    <span className="text-xs text-gray-300 font-medium">{lead.lead_score || 0}</span>
-                  </div>
+                  <div className="text-sm font-medium text-white">{lead.name}</div>
+                  {lead.company && <div className="text-xs text-gray-500">{lead.company}</div>}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                  {format(new Date(lead.created_at), 'MMM d')}
+                  {lead.email}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-gray-400 hover:text-white transition-colors">
-                    <MoreHorizontal className="w-5 h-5" />
-                  </button>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 pb-1">
+                  <div>{format(new Date(lead.created_at), 'MMM d, yyyy')}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2.5 py-0.5 inline-flex text-xs font-medium rounded-full border border-white/5 ${getStatusColor(lead.status)}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full mr-1.5 self-center ${getStatusColor(lead.status).replace('/20', '')}`} style={{ backgroundColor: 'currentColor' }}></div>
+                    {getStatusLabel(lead.status)}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                  {/* Placeholder for Assigned To - assuming mock or separate join needed later */}
+                  {index === 0 ? 'James Mitchell' : index === 2 ? 'Sarah Chen' : '—'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                  Website Form
                 </td>
               </motion.tr>
             ))}
           </tbody>
         </table>
-        {leads.length === 0 && <div className="p-8 text-center text-gray-500">No leads found.</div>}
+        {leads.length === 0 && <div className="p-8 text-center text-gray-500">No recent leads found.</div>}
       </div>
     </motion.div>
   );

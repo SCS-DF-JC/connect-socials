@@ -30,7 +30,7 @@ export function UpcomingCallsCard() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.5 }}
-      className="glass rounded-xl p-6 bg-[#1A1A1C] border border-white/5 h-full"
+      className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5 h-full"
     >
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-white">Upcoming Calls</h3>

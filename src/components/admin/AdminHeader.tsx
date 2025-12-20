@@ -13,7 +13,7 @@ export function AdminHeader({ sidebarCollapsed }: AdminHeaderProps) {
       initial={{ y: -10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, delay: 0.1 }}
-      className="h-16 glass-strong border-b border-white/10 flex items-center justify-between px-6 sticky top-0 z-30"
+      className="h-16 bg-[#1A1A1C] border-b border-white/10 flex items-center justify-between px-6 sticky top-0 z-30"
     >
       {/* Left: Brand */}
       <div className="flex items-center gap-3">
@@ -54,8 +54,8 @@ export function AdminHeader({ sidebarCollapsed }: AdminHeaderProps) {
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center border border-white/10">
               <User className="w-5 h-5 text-foreground" />
             </div>
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className="absolute -bottom-1 -right-1 text-[10px] px-1.5 py-0 bg-primary/20 border-primary/50 text-primary"
             >
               Admin

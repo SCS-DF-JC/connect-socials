@@ -161,7 +161,7 @@ export default function LeadsPage() {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="glass rounded-xl p-4 space-y-4"
+                className="rounded-xl p-4 space-y-4 bg-[#1A1A1C] border border-white/5"
               >
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Status</label>
@@ -235,7 +235,7 @@ export default function LeadsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="glass rounded-xl overflow-hidden"
+            className="rounded-xl overflow-hidden bg-[#1A1A1C] border border-white/5"
           >
             <div className="overflow-x-auto">
               <table className="w-full">

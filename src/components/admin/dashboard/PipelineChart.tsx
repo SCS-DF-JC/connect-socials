@@ -10,13 +10,13 @@ interface PipelineStage {
 }
 
 const statusColors: Record<string, string> = {
-  'new': 'bg-blue-500',
-  'in-review': 'bg-purple-500',
-  'in-progress': 'bg-indigo-500',
-  'discovery-call': 'bg-yellow-500',
-  'proposal-sent': 'bg-orange-500',
-  'won': 'bg-green-500',
-  'lost': 'bg-red-500',
+  'new': 'bg-[#3B82F6]', // Blue
+  'in-review': 'bg-[#A855F7]', // Purple
+  'in-progress': 'bg-[#EAB308]', // Gold/Yellow
+  'discovery-call': 'bg-[#14B8A6]', // Teal
+  'proposal-sent': 'bg-[#EC4899]', // Pink
+  'won': 'bg-[#22C55E]', // Green
+  'lost': 'bg-[#EF4444]', // Red
 };
 
 const statusLabels: Record<string, string> = {
@@ -78,7 +78,7 @@ export function PipelineChart() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.3 }}
-      className="glass rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
+      className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
     >
       <h3 className="text-lg font-semibold text-white mb-4">Lead Pipeline</h3>
 

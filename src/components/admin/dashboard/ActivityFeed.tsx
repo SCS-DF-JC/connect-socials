@@ -56,7 +56,7 @@ export function ActivityFeed() {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.4 }}
-      className="glass rounded-xl p-6 h-full bg-[#1A1A1C] border border-white/5"
+      className="rounded-xl p-6 h-full bg-[#1A1A1C] border border-white/5"
     >
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-white">Recent Activity</h3>

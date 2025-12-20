@@ -9,7 +9,7 @@ import { useState } from 'react';
 export default function SettingsPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredStaff = staffMembers.filter(staff => 
+  const filteredStaff = staffMembers.filter(staff =>
     staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     staff.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -31,7 +31,7 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="glass rounded-xl p-4 border-primary/20 bg-primary/5"
+        className="rounded-xl p-4 border-primary/20 bg-primary/5"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -74,7 +74,7 @@ export default function SettingsPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + index * 0.1 }}
-              className="glass rounded-xl p-5 card-hover"
+              className="bg-[#1A1A1C] border border-white/5 rounded-xl p-5 card-hover"
             >
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center border border-white/10">
@@ -83,11 +83,11 @@ export default function SettingsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-sm font-semibold text-foreground truncate">{staff.name}</h3>
-                    <Badge 
+                    <Badge
                       variant="outline"
                       className={cn(
                         'text-[10px] px-1.5 py-0',
-                        staff.role === 'admin' 
+                        staff.role === 'admin'
                           ? 'bg-primary/20 border-primary/50 text-primary'
                           : 'bg-muted border-white/10 text-muted-foreground'
                       )}
@@ -114,7 +114,7 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
-        className="glass rounded-xl p-6"
+        className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
       >
         <h2 className="text-lg font-semibold text-foreground mb-4">System Settings</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -142,7 +142,7 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.5 }}
-        className="glass rounded-xl p-4 border-primary/10 bg-primary/5"
+        className="rounded-xl p-4 border-primary/20 bg-primary/5"
       >
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">

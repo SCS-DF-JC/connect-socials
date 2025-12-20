@@ -16,19 +16,19 @@ interface StatCardProps {
 }
 
 const variants = {
-    default: 'glass text-white',
-    gold: 'glass border-yellow-500/20 bg-yellow-500/5 text-yellow-500',
-    success: 'glass border-green-500/20 bg-green-500/5 text-green-500',
-    danger: 'glass border-red-500/20 bg-red-500/5 text-red-500',
-    white: 'bg-white text-gray-900 border-none shadow-lg',
+    default: 'bg-[#1A1A1C] text-white border-none', // Dark grey card
+    gold: 'bg-[#1A1A1C] text-white border-none', // Dark grey card with gold accents handled in content
+    success: 'bg-[#1F2E25] text-white border-none', // Dark Green card
+    danger: 'bg-[#2E1F1F] text-white border-none', // Dark Red card
+    white: 'bg-[#1A1A1C] text-white border-none', // Renaming 'white' usage to dark for now to fix legacy
 };
 
 const iconVariants = {
-    default: 'text-primary bg-primary/10',
-    gold: 'text-yellow-500 bg-yellow-500/10',
-    success: 'text-green-500 bg-green-500/10',
-    danger: 'text-red-500 bg-red-500/10',
-    white: 'text-primary bg-primary/10',
+    default: 'text-gray-400 bg-white/5',
+    gold: 'text-[#F59E0B] bg-[#F59E0B]/10', // Gold icon
+    success: 'text-[#10B981] bg-[#10B981]/20', // Green icon on green card
+    danger: 'text-[#EF4444] bg-[#EF4444]/20', // Red icon on red card
+    white: 'text-gray-400 bg-white/5',
 };
 
 export function StatCard({ title, value, icon: Icon, trend, variant = 'default', delay = 0 }: StatCardProps) {
@@ -52,7 +52,7 @@ export function StatCard({ title, value, icon: Icon, trend, variant = 'default',
                                     variant === 'gold' ? "text-yellow-500" :
                                         variant === 'success' ? "text-green-500" :
                                             variant === 'danger' ? "text-red-500" :
-                                                isWhite ? "text-gray-900" : "text-white"
+                                                isWhite ? "text-white" : "text-white"
                                 )}>
                                     {value}
                                 </h2>
