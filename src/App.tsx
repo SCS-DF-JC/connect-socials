@@ -56,6 +56,10 @@ import Login from "./pages/base44/Login";
 import NotFound from "./pages/NotFound";
 import WordpressAutomationApp from "./components/apps/WordpressAutomationApp";
 
+// ✅ Admin
+import AdminRoute from "./components/admin/AdminRoute";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 const queryClient = new QueryClient();
 
 // ✅ Protected Route
@@ -140,6 +144,16 @@ const App = () => (
               element={<ProtectedRoute><LeadsTool /></ProtectedRoute>}
             />
 
+            {/* ✅ ADMIN ROUTES */}
+            <Route
+              path="/admin/*"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+
             <Route
               path="/account"
               element={
@@ -163,13 +177,13 @@ const App = () => (
               }
             />
             <Route
-  path="/apps/wordpress-seo"
-  element={
-    <ProtectedRoute>
-      <WordpressAutomationApp />
-    </ProtectedRoute>
-  }
-/>
+              path="/apps/wordpress-seo"
+              element={
+                <ProtectedRoute>
+                  <WordpressAutomationApp />
+                </ProtectedRoute>
+              }
+            />
 
 
 
