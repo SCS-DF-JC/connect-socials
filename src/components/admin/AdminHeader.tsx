@@ -23,8 +23,6 @@ export function AdminHeader({ sidebarCollapsed }: AdminHeaderProps) {
         <span className="text-tertiary">—</span>
         <span className="text-sm font-medium text-gold-gradient">Admin Console</span>
       </div>
-
-      {/* Center: Search */}
       <div className="flex-1 max-w-md mx-8">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
