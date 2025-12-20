@@ -145,6 +145,7 @@ const App = () => (
             />
 
             {/* ✅ ADMIN ROUTES */}
+            {/* 
             <Route
               path="/admin/*"
               element={
@@ -152,7 +153,8 @@ const App = () => (
                   <AdminLayout />
                 </AdminRoute>
               }
-            />
+            /> 
+            */}
 
             <Route
               path="/account"
