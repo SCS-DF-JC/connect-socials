@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { animationConfig } from '@/lib/animations';
+import { animationConfig } from '@/components/admin/animations';
 
 interface AnimatedBlobProps {
   className?: string;
@@ -8,14 +8,14 @@ interface AnimatedBlobProps {
   size?: number;
 }
 
-export function AnimatedBlob({ 
-  className = '', 
+export function AnimatedBlob({
+  className = '',
   color = 'gold',
   delay = 0,
   size = 500,
 }: AnimatedBlobProps) {
-  const baseColor = color === 'gold' 
-    ? 'bg-primary/15' 
+  const baseColor = color === 'gold'
+    ? 'bg-primary/15'
     : 'bg-foreground/8';
 
   return (
@@ -48,39 +48,39 @@ export function AnimatedBackground() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Large gold blob - top right */}
-      <AnimatedBlob 
+      <AnimatedBlob
         className="-top-64 -right-64"
         color="gold"
         size={650}
         delay={0}
       />
-      
+
       {/* Silver blob - bottom left */}
-      <AnimatedBlob 
+      <AnimatedBlob
         className="bottom-[-100px] left-[15%]"
         color="silver"
         size={550}
         delay={5}
       />
-      
+
       {/* Smaller gold blob - center right */}
-      <AnimatedBlob 
+      <AnimatedBlob
         className="top-[40%] right-[20%]"
         color="gold"
         size={350}
         delay={10}
       />
-      
+
       {/* Silver accent - top left */}
-      <AnimatedBlob 
+      <AnimatedBlob
         className="top-[20%] -left-32"
         color="silver"
         size={400}
         delay={15}
       />
-      
+
       {/* Subtle gold - bottom right */}
-      <AnimatedBlob 
+      <AnimatedBlob
         className="bottom-[10%] right-[5%]"
         color="gold"
         size={280}
