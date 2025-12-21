@@ -65,11 +65,13 @@ export async function initiateInstagramAuth(): Promise<void> {
   ].join(",");
 
   const authUrl =
-    "https://www.facebook.com/v19.0/dialog/oauth" +
-    `?client_id=${encodeURIComponent(FACEBOOK_CLIENT_ID)}` +
-    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-    `&state=${encodeURIComponent(state)}` +
-    `&scope=${encodeURIComponent(scope)}`;
+  "https://www.facebook.com/v19.0/dialog/oauth" +
+  `?client_id=${encodeURIComponent(FACEBOOK_CLIENT_ID)}` +
+  `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+  `&response_type=code` + // ✅ REQUIRED
+  `&state=${encodeURIComponent(state)}` +
+  `&scope=${encodeURIComponent(scope)}`;
+
 
   window.location.href = authUrl;
 }
