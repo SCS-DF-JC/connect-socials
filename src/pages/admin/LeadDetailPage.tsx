@@ -138,12 +138,40 @@ export default function LeadDetailPage() {
   }
 
   const handleSave = async () => {
-    // Optimistic update
-    toast({
-      title: "Changes saved",
-      description: "Lead details have been updated successfully.",
-    });
-    // In real app: await supabase.from('leads').update({ status, priority, assigned_to: assignee }).eq('id', id);
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('leads')
+        .update({
+          status: status,
+          priority: priority,
+          assigned_to: assignee
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error("Save error:", error);
+        toast({
+          title: "Save failed",
+          description: error.message || "Could not update lead details. Check if 'status' and 'priority' columns exist in your database.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Changes saved",
+          description: "Lead details have been updated successfully.",
+        });
+      }
+    } catch (err) {
+      console.error("Unexpected save crash:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while saving.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddNote = () => {

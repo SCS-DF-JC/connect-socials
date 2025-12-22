@@ -157,11 +157,39 @@ export default function StrategyCallDetailPage() {
   }
 
   const handleSave = async () => {
-    toast({
-      title: "Changes saved",
-      description: "Strategy call details have been updated successfully.",
-    });
-    // await supabase.from('strategy_calls').update({ status, lead_id: selectedLeadId }).eq('id', id);
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('strategy_calls')
+        .update({
+          status: status,
+          lead_id: selectedLeadId
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error("Save error:", error);
+        toast({
+          title: "Save failed",
+          description: error.message || "Could not update call details. Check if the 'strategy_calls' table exists.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Changes saved",
+          description: "Strategy call details have been updated successfully.",
+        });
+      }
+    } catch (err) {
+      console.error("Unexpected save crash:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while saving.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddNote = () => {
