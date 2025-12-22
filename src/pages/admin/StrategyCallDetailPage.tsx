@@ -63,46 +63,56 @@ export default function StrategyCallDetailPage() {
   useEffect(() => {
     async function fetchData() {
       if (!id) return;
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      // Fetch Call
-      const { data: callData, error } = await supabase
-        .from('strategy_calls')
-        .select('*')
-        .eq('id', id)
-        .single();
+        // Fetch Call
+        const { data: callData, error } = await supabase
+          .from('strategy_calls')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-      if (callData) {
-        setCall({
-          id: callData.id,
-          name: callData.name,
-          email: callData.email,
-          phone: callData.phone,
-          preferredDateTime: callData.preferred_time || callData.created_at,
-          timeZone: callData.time_zone || 'UTC',
-          status: callData.status || 'pending',
-          source: callData.source || 'Website',
-          leadId: callData.lead_id,
-          createdAt: callData.created_at,
-          updatedAt: callData.updated_at || callData.created_at,
-        });
-        setStatus(callData.status || 'pending');
-        setSelectedLeadId(callData.lead_id);
+        if (error) {
+          if (error.code !== '42P01') console.error("Error fetching call detail:", error);
+        } else if (callData) {
+          setCall({
+            id: callData.id,
+            name: callData.name || 'Unknown',
+            email: callData.email || '',
+            phone: callData.phone,
+            preferredDateTime: callData.preferred_time || callData.created_at,
+            timeZone: callData.time_zone || 'UTC',
+            status: (callData.status as StrategyCallStatus) || 'pending',
+            source: callData.source || 'Website',
+            leadId: callData.lead_id,
+            createdAt: callData.created_at,
+            updatedAt: callData.updated_at || callData.created_at,
+          });
+          setStatus(callData.status || 'pending');
+          setSelectedLeadId(callData.lead_id);
 
-        // Fetch Linked Lead if exists
-        if (callData.lead_id) {
-          const { data: leadData } = await supabase.from('leads').select('id, name, email, company').eq('id', callData.lead_id).single();
-          if (leadData) setLinkedLead(leadData);
+          // Fetch Linked Lead if exists
+          if (callData.lead_id) {
+            try {
+              const { data: leadData } = await supabase.from('leads').select('id, name, email, company').eq('id', callData.lead_id).single();
+              if (leadData) setLinkedLead(leadData);
+            } catch (e) { }
+          }
         }
-      }
 
-      // Fetch all leads for dropdown (optimize this later if needed)
-      const { data: leadsData } = await supabase.from('leads').select('id, name, email, company').order('created_at', { ascending: false });
-      if (leadsData) {
-        setAllLeads(leadsData);
+        // Fetch all leads for dropdown
+        try {
+          const { data: leadsData } = await supabase.from('leads').select('id, name, email, company').order('created_at', { ascending: false });
+          if (leadsData) {
+            setAllLeads(leadsData);
+          }
+        } catch (e) { }
+      } catch (err) {
+        console.error("Unexpected crash in StrategyCallDetailPage:", err);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     }
     fetchData();
   }, [id]);

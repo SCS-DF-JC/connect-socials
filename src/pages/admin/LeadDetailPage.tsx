@@ -69,34 +69,41 @@ export default function LeadDetailPage() {
   useEffect(() => {
     async function fetchLead() {
       if (!id) return;
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .eq('id', id)
-        .single();
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('leads')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-      if (data) {
-        setLead({
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          company: data.company,
-          message: data.message,
-          serviceInterest: data.service_interest || 'General',
-          source: data.source || 'website',
-          status: data.status || 'new',
-          priority: data.priority || 'medium',
-          assignedTo: data.assigned_to,
-          createdAt: data.created_at,
-          tags: data.tags || []
-        });
-        setStatus(data.status || 'new');
-        setPriority(data.priority || 'medium');
-        setAssignee(data.assigned_to || '');
+        if (error) {
+          console.error("Error fetching lead detail:", error);
+        } else if (data) {
+          setLead({
+            id: data.id,
+            name: data.name || 'Unknown',
+            email: data.email || '',
+            phone: data.phone,
+            company: data.company,
+            message: data.message,
+            serviceInterest: data.service_interest || 'General',
+            source: data.source || 'website',
+            status: data.status || 'new',
+            priority: data.priority || 'medium',
+            assignedTo: data.assigned_to,
+            createdAt: data.created_at || new Date().toISOString(),
+            tags: data.tags || []
+          });
+          setStatus(data.status || 'new');
+          setPriority(data.priority || 'medium');
+          setAssignee(data.assigned_to || '');
+        }
+      } catch (err) {
+        console.error("Unexpected crash in LeadDetailPage:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     fetchLead();
   }, [id]);
