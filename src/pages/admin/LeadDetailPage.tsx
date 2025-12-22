@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   ArrowLeft, Mail, Phone, Building2, Calendar, Globe,
   MessageSquare, Clock, User, Tag, ChevronDown, Save,
@@ -48,11 +48,15 @@ interface LeadDetail {
 }
 
 export default function LeadDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Support both useParams and manual extraction for cases where it's rendered in a switch
+  const id = paramId || location.pathname.split('/').pop();
 
   const [lead, setLead] = useState<LeadDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!id);
   const [notes, setNotes] = useState<any[]>([]); // Stub for now
   const [activities, setActivities] = useState<any[]>([]); // Stub for now
 

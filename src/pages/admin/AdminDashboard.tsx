@@ -44,7 +44,7 @@ export default function AdminDashboard() {
           .select('*');
 
         if (leadsError) {
-          console.error("Leads fetch error:", leadsError);
+          console.warn("Leads fetch info:", leadsError);
         }
 
         const leadsData = leads || [];
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
             if (callsError.code === 'PGRST116' || callsError.code === '42P01') {
               console.warn("Table strategy_calls does not exist yet.");
             } else {
-              console.error("Calls fetch error:", callsError);
+              console.warn("Calls fetch info:", callsError);
             }
           } else {
             callsData = calls || [];

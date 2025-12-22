@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   ArrowLeft, Mail, Phone, Calendar, Clock, Globe,
   MessageSquare, User, ChevronDown, Save, Link as LinkIcon,
@@ -43,11 +43,15 @@ interface LeadSimple {
 }
 
 export default function StrategyCallDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: paramId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Support both useParams and manual extraction for cases where it's rendered in a switch
+  const id = paramId || location.pathname.split('/').pop();
 
   const [call, setCall] = useState<StrategyCallDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!id);
   const [allLeads, setAllLeads] = useState<LeadSimple[]>([]);
   const [linkedLead, setLinkedLead] = useState<LeadSimple | null>(null);
 

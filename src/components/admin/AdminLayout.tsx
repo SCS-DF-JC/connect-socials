@@ -47,6 +47,14 @@ export function AdminLayout() {
   const [activeSection, setActiveSection] = useState<Section>(getInitialSection);
   const [direction, setDirection] = useState(0);
 
+  // Sync active section with URL changes
+  useEffect(() => {
+    const section = getInitialSection();
+    if (section !== activeSection) {
+      setActiveSection(section);
+    }
+  }, [location.pathname]);
+
   const handleSectionChange = useCallback((newSection: Section) => {
     const currentIndex = sectionOrder.indexOf(activeSection);
     const newIndex = sectionOrder.indexOf(newSection);
