@@ -78,7 +78,7 @@ export function PipelineChart() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.3 }}
-      className="rounded-xl p-6 bg-[#1A1A1C] border border-white/5"
+      className="rounded-xl p-6 glass card-hover"
     >
       <h3 className="text-lg font-semibold text-white mb-4">Lead Pipeline</h3>
 

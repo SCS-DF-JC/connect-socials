@@ -44,7 +44,7 @@ export function RecentLeadsTable() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.5 }}
-      className="rounded-xl overflow-hidden bg-[#1A1A1C] border border-white/5"
+      className="rounded-xl overflow-hidden glass card-hover"
     >
       <div className="p-6 flex items-center justify-between border-b border-white/10">
         <h3 className="text-lg font-semibold text-white">Recent Leads</h3>
@@ -72,7 +72,7 @@ export function RecentLeadsTable() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 + index * 0.05 }}
-                className="hover:bg-white/5 transition-colors cursor-pointer bg-[#1A1A1C]"
+                className="row-hover cursor-pointer"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-white">{lead.name}</div>

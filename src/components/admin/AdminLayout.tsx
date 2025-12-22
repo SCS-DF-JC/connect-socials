@@ -8,6 +8,7 @@ import { SegmentedNav } from './SegmentedNav';
 import Dashboard from '@/pages/admin/AdminDashboard';
 import LeadsPage from '@/pages/admin/LeadsPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
+import '@/styles/admin.css';
 
 type Section = 'dashboard' | 'leads' | 'settings';
 
@@ -70,7 +71,7 @@ export function AdminLayout() {
   }, [activeSection]);
 
   return (
-    <div className="min-h-screen bg-[#0F0F10]">
+    <div className="admin-theme min-h-screen bg-background">
       {/* Animated ambient background */}
       <AnimatedBackground />
 

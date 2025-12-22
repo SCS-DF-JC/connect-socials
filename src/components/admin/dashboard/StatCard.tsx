@@ -16,43 +16,41 @@ interface StatCardProps {
 }
 
 const variants = {
-    default: 'bg-[#1A1A1C] text-white border-none', // Dark grey card
-    gold: 'bg-[#1A1A1C] text-white border-none', // Dark grey card with gold accents handled in content
-    success: 'bg-[#1F2E25] text-white border-none', // Dark Green card
-    danger: 'bg-[#2E1F1F] text-white border-none', // Dark Red card
-    white: 'bg-[#1A1A1C] text-white border-none', // Renaming 'white' usage to dark for now to fix legacy
+    default: 'glass border-white/5',
+    gold: 'glass border-primary/20',
+    success: 'glass border-green-500/20',
+    danger: 'glass border-red-500/20',
+    white: 'glass border-white/5',
 };
 
 const iconVariants = {
     default: 'text-gray-400 bg-white/5',
-    gold: 'text-[#F59E0B] bg-[#F59E0B]/10', // Gold icon
-    success: 'text-[#10B981] bg-[#10B981]/20', // Green icon on green card
-    danger: 'text-[#EF4444] bg-[#EF4444]/20', // Red icon on red card
+    gold: 'text-primary bg-primary/10',
+    success: 'text-green-500 bg-green-500/10',
+    danger: 'text-red-500 bg-red-500/10',
     white: 'text-gray-400 bg-white/5',
 };
 
 export function StatCard({ title, value, icon: Icon, trend, variant = 'default', delay = 0 }: StatCardProps) {
-    const isWhite = variant === 'white';
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay }}
         >
-            <Card className={cn('overflow-hidden border-none transition-all duration-300', variants[variant])}>
+            <Card className={cn('overflow-hidden card-hover', variants[variant])}>
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                            <p className={cn("text-xs font-medium", isWhite ? "text-gray-500" : "text-gray-400")}>
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                 {title}
                             </p>
                             <div className="flex items-baseline gap-2">
                                 <h2 className={cn("text-3xl font-bold tracking-tight",
-                                    variant === 'gold' ? "text-yellow-500" :
+                                    variant === 'gold' ? "text-primary" :
                                         variant === 'success' ? "text-green-500" :
                                             variant === 'danger' ? "text-red-500" :
-                                                isWhite ? "text-white" : "text-white"
+                                                "text-foreground"
                                 )}>
                                     {value}
                                 </h2>
@@ -63,7 +61,7 @@ export function StatCard({ title, value, icon: Icon, trend, variant = 'default',
                                 )}
                             </div>
                         </div>
-                        <div className={cn("p-2.5 rounded-xl transition-colors duration-300", iconVariants[variant])}>
+                        <div className={cn("p-3 rounded-xl transition-all duration-300", iconVariants[variant])}>
                             <Icon className="w-5 h-5" />
                         </div>
                     </div>

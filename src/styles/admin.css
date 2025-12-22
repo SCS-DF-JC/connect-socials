@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   ADMIN THEME - SCOPED STYLES
+   Based on SCS Lumina Nexus Admin Console
+   ============================================ */
+
+@layer base {
+  .admin-theme {
+    /* Dark Luxury Theme - Smart Content Solutions */
+    --background: 0 0% 10%;
+    /* #1A1A1C */
+    --foreground: 220 5% 84%;
+    /* #D6D7D8 */
+
+    --card: 0 1% 24%;
+    /* #3B3C3E */
+    --card-foreground: 220 5% 84%;
+
+    --popover: 0 1% 20%;
+    --popover-foreground: 220 5% 84%;
+
+    --primary: 42 62% 68%;
+    /* Gold #E1C37A */
+    --primary-foreground: 0 0% 10%;
+
+    --secondary: 0 1% 30%;
+    --secondary-foreground: 220 5% 84%;
+
+    --muted: 0 1% 22%;
+    --muted-foreground: 220 3% 67%;
+    /* #A9AAAC */
+
+    --accent: 42 42% 50%;
+    /* Gold darker #B6934C */
+    --accent-foreground: 0 0% 10%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 220 5% 84%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
+    --ring: 42 62% 68%;
+
+    --radius: 0.75rem;
+
+    /* Custom colors */
+    --tertiary: 0 1% 36%;
+    /* #5B5C60 */
+    --gold-start: 42 62% 68%;
+    /* #E1C37A */
+    --gold-end: 36 42% 50%;
+    /* #B6934C */
+    --silver-start: 220 5% 84%;
+    /* #D6D7D8 */
+    --silver-end: 0 1% 36%;
+    /* #5B5C60 */
+
+    /* Status colors */
+    --status-new: 210 100% 60%;
+    --status-review: 280 70% 60%;
+    --status-progress: 42 62% 68%;
+    --status-discovery: 180 60% 50%;
+    --status-proposal: 320 70% 60%;
+    --status-won: 142 70% 50%;
+    --status-lost: 0 70% 50%;
+
+    /* Priority colors */
+    --priority-low: 210 50% 50%;
+    --priority-medium: 42 62% 68%;
+    --priority-high: 0 70% 55%;
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 220 5% 84%;
+    --sidebar-primary: 42 62% 68%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 0 1% 18%;
+    --sidebar-accent-foreground: 220 5% 84%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 42 62% 68%;
+  }
+}
+
+@layer base {
+  .admin-theme * {
+    @apply border-border;
+  }
+
+  .admin-theme {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+
+  /* Glass morphism effect */
+  .admin-theme .glass {
+    @apply bg-card/60 backdrop-blur-xl border border-white/10;
+  }
+
+  .admin-theme .glass-strong {
+    @apply bg-card/80 backdrop-blur-2xl border border-white/15;
+  }
+
+  /* Gold gradient text */
+  .admin-theme .text-gold-gradient {
+    background: linear-gradient(135deg, hsl(var(--gold-start)) 0%, hsl(var(--gold-end)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Silver gradient text */
+  .admin-theme .text-silver-gradient {
+    background: linear-gradient(135deg, hsl(var(--silver-start)) 0%, hsl(var(--silver-end)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gold glow effect */
+  .admin-theme .gold-glow {
+    box-shadow: 0 0 40px rgba(225, 195, 122, 0.3);
+  }
+
+  .admin-theme .gold-glow-sm {
+    box-shadow: 0 0 20px rgba(225, 195, 122, 0.2);
+  }
+
+  /* Gold gradient background */
+  .admin-theme .bg-gold-gradient {
+    background: linear-gradient(135deg, hsl(var(--gold-start)) 0%, hsl(var(--gold-end)) 100%);
+  }
+
+  /* Silver gradient background */
+  .admin-theme .bg-silver-gradient {
+    background: linear-gradient(135deg, hsl(var(--silver-start)) 0%, hsl(var(--silver-end)) 100%);
+  }
+
+  /* Ambient glow backgrounds */
+  .admin-theme .ambient-gold {
+    @apply absolute rounded-full bg-primary/20 blur-[150px] pointer-events-none;
+  }
+
+  .admin-theme .ambient-silver {
+    @apply absolute rounded-full bg-foreground/10 blur-[150px] pointer-events-none;
+  }
+
+  /* Premium card hover - enhanced */
+  .admin-theme .card-hover {
+    @apply transition-all duration-300 ease-out will-change-transform;
+  }
+
+  .admin-theme .card-hover:hover {
+    @apply -translate-y-1;
+    box-shadow:
+      0 8px 30px rgba(0, 0, 0, 0.35),
+      0 0 25px rgba(225, 195, 122, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Table row hover - enhanced */
+  .admin-theme .row-hover {
+    @apply transition-all duration-200 ease-out relative;
+  }
+
+  .admin-theme .row-hover::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-0.5 bg-primary opacity-0 transition-opacity duration-200;
+  }
+
+  .admin-theme .row-hover:hover {
+    @apply bg-white/5 -translate-y-px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .admin-theme .row-hover:hover::before {
+    @apply opacity-100;
+    box-shadow: 0 0 12px rgba(225, 195, 122, 0.4);
+  }
+
+  /* CTA button breathing animation */
+  .admin-theme .cta-breathe {
+    animation: cta-breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes cta-breathe {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(225, 195, 122, 0.25);
+    }
+
+    50% {
+      box-shadow: 0 0 30px rgba(225, 195, 122, 0.4);
+    }
+  }
+
+  /* Enhanced button hover */
+  .admin-theme .btn-premium {
+    @apply transition-all duration-200 ease-out will-change-transform;
+  }
+
+  .admin-theme .btn-premium:hover {
+    @apply -translate-y-0.5 scale-[1.02];
+    box-shadow: 0 4px 20px rgba(225, 195, 122, 0.35);
+  }
+
+  .admin-theme .btn-premium:active {
+    @apply translate-y-0 scale-[0.99];
+  }
+}
+
+/* Scrollbar styling for admin theme */
+.admin-theme ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-theme ::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+.admin-theme ::-webkit-scrollbar-thumb {
+  background: hsl(var(--tertiary));
+  border-radius: 4px;
+}
+
+.admin-theme ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .admin-theme .cta-breathe {
+    animation: none;
+  }
+
+  .admin-theme .card-hover,
+  .admin-theme .row-hover,
+  .admin-theme .btn-premium {
+    transition: none;
+  }
+}

@@ -214,7 +214,7 @@ export default function LeadsPage() {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="rounded-xl p-4 space-y-4 bg-[#1A1A1C] border border-white/5"
+                className="rounded-xl p-4 space-y-4 glass"
               >
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Status</label>
@@ -288,7 +288,7 @@ export default function LeadsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="rounded-xl overflow-hidden bg-[#1A1A1C] border border-white/5"
+            className="rounded-xl overflow-hidden glass"
           >
             {loading ? (
               <div className="flex items-center justify-center p-12">
