@@ -90,7 +90,8 @@ export default function LeadDetailPage() {
             email: data.email || '',
             phone: data.phone,
             company: data.company,
-            message: data.message,
+            // Prioritize ai_summary if message is known to be AI-cluttered
+            message: data.ai_summary || data.message,
             serviceInterest: data.service_interest || 'General',
             source: data.source || 'website',
             status: data.status || 'new',
