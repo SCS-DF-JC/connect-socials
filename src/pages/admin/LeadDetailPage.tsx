@@ -154,7 +154,41 @@ export default function LeadDetailPage() {
     setNewNote('');
   };
 
+  const formatMessage = (msg: string | undefined) => {
+    if (!msg) return null;
+    try {
+      // If it looks like a JSON object from an AI response
+      if (msg.trim().startsWith('{')) {
+        const parsed = JSON.parse(msg);
+
+        // Handle nested OpenAI/Assistant style responses
+        if (parsed.content) {
+          // If content itself is a JSON block (common with structured output)
+          if (typeof parsed.content === 'string' && parsed.content.includes('```json')) {
+            const jsonMatch = parsed.content.match(/```json\n([\s\S]*?)\n```/);
+            if (jsonMatch) {
+              const innerJson = JSON.parse(jsonMatch[1]);
+              return innerJson.summary || innerJson.content || parsed.content;
+            }
+          }
+          return parsed.content;
+        }
+
+        // Handle direct structured JSON
+        if (parsed.summary) return parsed.summary;
+        if (parsed.message) return parsed.message;
+
+        // Fallback for other JSON types: just show the main content string if it exists
+        return typeof parsed === 'object' ? JSON.stringify(parsed, null, 2) : msg;
+      }
+    } catch (e) {
+      // Not JSON or parsing failed, return original
+    }
+    return msg;
+  };
+
   const assignedStaff = staffMembers.find(s => s.id === assignee);
+  const displayMessage = formatMessage(lead.message);
 
   return (
     <div className="space-y-6">
@@ -248,15 +282,16 @@ export default function LeadDetailPage() {
               </div>
             </div>
 
-            {/* Original Message */}
-            {lead.message && (
+            {displayMessage && (
               <div className="border-t border-white/10 pt-4">
                 <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-primary" />
                   Original Message
                 </h3>
                 <div className="p-4 rounded-lg bg-muted/30 border border-white/5">
-                  <p className="text-sm text-foreground leading-relaxed">{lead.message}</p>
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                    {displayMessage}
+                  </p>
                 </div>
               </div>
             )}
