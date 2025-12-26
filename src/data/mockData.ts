@@ -1,7 +1,4 @@
-// Mock data types and stub data for admin pages
-// This is a temporary file to unblock the build - replace with real Supabase queries later
 
-// ============= TYPES =============
 
 export type LeadStatus = 'new' | 'in-review' | 'in-progress' | 'discovery-call' | 'proposal-sent' | 'won' | 'lost';
 export type LeadSource = 'website' | 'referral' | 'manual' | 'linkedin';
