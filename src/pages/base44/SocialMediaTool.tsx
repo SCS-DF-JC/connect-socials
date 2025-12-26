@@ -218,7 +218,7 @@ export default function SocialMediaTool(): JSX.Element {
       form.append("image", imageFile);
     }
 
-    const res = await fetch("https://scs-ltd.app.n8n.cloud/webhook/social-media", {
+    const res = await fetch("https://n8n.smartcontentsolutions.co.uk/webhook/social-media", {
       method: "POST",
       body: form
     });

@@ -79,7 +79,7 @@ export default function CreatePost() {
 
     try {
       const res = await fetch(
-        "https://scs-ltd.app.n8n.cloud/webhook/social-media",
+        "https://n8n.smartcontentsolutions.co.uk/webhook/social-media",
         {
           method: "POST",
           body: form,
