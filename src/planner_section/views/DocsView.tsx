@@ -5,11 +5,13 @@ import { DocsSidebarList } from "../components/docs/DocsSidebarList";
 import { DocsEditor } from "../components/docs/DocsEditor";
 import { DocsMetadataPanel } from "../components/docs/DocsMetadataPanel";
 import { Loader2 } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
 
 export function DocsView() {
   const { docs, isLoading, createDoc, updateDoc, deleteDoc, searchQuery } = useDocs();
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const { user } = useUser();
 
   // Combine global search with local search
   const effectiveSearchQuery = searchQuery || localSearchQuery;
@@ -36,11 +38,12 @@ export function DocsView() {
   }, [docs, selectedDocId]);
 
   const handleNewDoc = async () => {
+    const creatorName = user?.firstName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "Admin";
     const newDoc = await createDoc({
       title: "Untitled Document",
       content: "<p>Start writing here...</p>",
       tags: [],
-      createdBy: "Dominik",
+      createdBy: creatorName,
     });
     setSelectedDocId(newDoc.id);
   };
