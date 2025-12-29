@@ -17,9 +17,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gold to-gold-muted flex items-center justify-center gold-glow">
-            <span className="text-sm font-bold text-primary-foreground">S</span>
-          </div>
+          <img src="/icon.png" alt="SCS Logo" className="w-8 h-8 object-contain" />
           <span className="text-xl font-semibold tracking-tight">
             <span className="text-gold">SCS</span>
             <span className="text-silver ml-1">Workspace</span>
