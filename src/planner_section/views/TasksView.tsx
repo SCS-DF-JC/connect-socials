@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Plus, LayoutList, Kanban, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TASK_PRIORITIES, ASSIGNEES } from "@/types";
+import { TASK_PRIORITIES, ASSIGNEES } from "../types";
 
 type ViewMode = "table" | "kanban";
 
