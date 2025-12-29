@@ -9,16 +9,18 @@ import "./planner.css";
 
 export default function PlannerApp() {
     return (
-        <DataProvider>
-            <Layout>
-                <Routes>
-                    <Route path="/" element={<DashboardView />} />
-                    <Route path="/docs" element={<DocsView />} />
-                    <Route path="/tasks" element={<TasksView />} />
-                    <Route path="/settings" element={<SettingsView />} />
-                    <Route path="*" element={<Navigate to="/planner" replace />} />
-                </Routes>
-            </Layout>
-        </DataProvider>
+        <div className="planner-theme min-h-screen bg-background text-foreground">
+            <DataProvider>
+                <Layout>
+                    <Routes>
+                        <Route path="/" element={<DashboardView />} />
+                        <Route path="/docs" element={<DocsView />} />
+                        <Route path="/tasks" element={<TasksView />} />
+                        <Route path="/settings" element={<SettingsView />} />
+                        <Route path="*" element={<Navigate to="/planner" replace />} />
+                    </Routes>
+                </Layout>
+            </DataProvider>
+        </div>
     );
 }

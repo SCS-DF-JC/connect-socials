@@ -1,9 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @layer base {
-  :root {
+  .planner-theme {
     --background: 240 6% 6%;
     --foreground: 0 0% 95%;
 
@@ -68,15 +64,15 @@
   .text-gold {
     color: hsl(var(--gold));
   }
-  
+
   .text-silver {
     color: hsl(var(--silver));
   }
-  
+
   .bg-surface {
     background-color: hsl(var(--surface));
   }
-  
+
   .bg-surface-hover {
     background-color: hsl(var(--surface-hover));
   }

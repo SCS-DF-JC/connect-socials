@@ -82,7 +82,7 @@ export function DashboardView() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Docs Card */}
-        <Card className="bg-card border-border hover:border-gold/30 transition-colors group cursor-pointer" onClick={() => navigate("/docs")}>
+        <Card className="glass-card border-border hover:border-gold/30 transition-all duration-300 group cursor-pointer" onClick={() => navigate("/docs")}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Docs</CardTitle>
             <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
@@ -96,7 +96,7 @@ export function DashboardView() {
         </Card>
 
         {/* Tasks Card */}
-        <Card className="bg-card border-border hover:border-silver/30 transition-colors group cursor-pointer" onClick={() => navigate("/tasks")}>
+        <Card className="glass-card border-border hover:border-silver/30 transition-all duration-300 group cursor-pointer" onClick={() => navigate("/tasks")}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Open Tasks</CardTitle>
             <div className="w-10 h-10 rounded-lg bg-silver/10 flex items-center justify-center group-hover:bg-silver/20 transition-colors">
@@ -110,7 +110,7 @@ export function DashboardView() {
         </Card>
 
         {/* Tasks by Assignee Card */}
-        <Card className="bg-card border-border hover:border-gold/30 transition-colors">
+        <Card className="glass-card border-border hover:border-gold/30 transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Tasks by Assignee</CardTitle>
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gold/10 to-silver/10 flex items-center justify-center">
@@ -138,7 +138,7 @@ export function DashboardView() {
       </div>
 
       {/* Recently Updated Docs */}
-      <Card className="bg-card border-border">
+      <Card className="glass-card border-border">
         <CardHeader className="flex flex-row items-center gap-2">
           <Clock className="w-5 h-5 text-muted-foreground" />
           <CardTitle className="text-lg font-medium">Recently Updated Docs</CardTitle>
@@ -178,7 +178,7 @@ export function DashboardView() {
       </Card>
 
       {/* High Priority Tasks */}
-      <Card className="bg-card border-border">
+      <Card className="glass-card border-border">
         <CardHeader className="flex flex-row items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-amber-400" />
           <CardTitle className="text-lg font-medium">High Priority Tasks</CardTitle>
@@ -225,7 +225,7 @@ export function DashboardView() {
       </Card>
 
       {/* Quick Actions */}
-      <Card className="bg-card border-border">
+      <Card className="glass-card border-border">
         <CardHeader>
           <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
         </CardHeader>
