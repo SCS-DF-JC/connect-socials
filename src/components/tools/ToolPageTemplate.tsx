@@ -55,15 +55,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
   const hasAccess = hasAccessToTool(tool.planRequired);
 
   // Get the referrer from URL parameter, fallback to dashboard-preview
-  const fromParam = searchParams.get("from");
-  const referrerPath = fromParam || "/dashboard-preview";
-
-  // Debug logging
-  console.log("🔍 ToolPageTemplate Debug:");
-  console.log("  - Full URL:", window.location.href);
-  console.log("  - Search Params (all):", Array.from(searchParams.entries()));
-  console.log("  - from parameter:", fromParam);
-  console.log("  - referrerPath:", referrerPath);
+  const referrerPath = searchParams.get("from") || "/dashboard-preview";
 
   const categoryColors = {
     Core: {
@@ -166,10 +158,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={() => {
-              console.log("🔙 Back button clicked! Navigating to:", referrerPath);
-              navigate(referrerPath);
-            }}
+            onClick={() => navigate(referrerPath)}
             className="flex items-center gap-2 text-[#A9AAAC] hover:text-[#E1C37A] transition-colors mb-8 group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

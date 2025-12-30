@@ -48,14 +48,6 @@ function ToolCard({
 
   const cardProps = targetUrl ? { to: targetUrl } : {};
 
-  // Debug logging
-  if (hasAccess && tool.slug) {
-    console.log("🔗 ToolCard Navigation Debug:");
-    console.log("  - Tool:", tool.name);
-    console.log("  - Current Path:", currentPath);
-    console.log("  - Target URL:", targetUrl);
-  }
-
   const handleClick = () => {
     // ✅ LOCKED USERS NEVER NAVIGATE
     if (!hasAccess && onUnlockClick) {

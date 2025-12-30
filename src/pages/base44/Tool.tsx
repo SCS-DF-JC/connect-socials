@@ -26,21 +26,13 @@ export default function Tool() {
 
   const tool = getToolBySlug(slug);
 
-  // Debug logging
-  console.log("🛠️ Tool.tsx Debug:");
-  console.log("  - slug:", slug);
-  console.log("  - tool found:", !!tool);
-  console.log("  - current path:", window.location.pathname);
-
   // ✅ No slug at all → don't render (user is navigating away)
   if (!slug) {
-    console.log("  ℹ️ No slug parameter, not rendering");
     return null;
   }
 
   // ✅ Invalid slug → dashboard (only redirect if there IS a slug but tool not found)
   if (!tool) {
-    console.log("  ⚠️ REDIRECTING to dashboard-preview (invalid slug)");
     return <Navigate to="/dashboard-preview" replace />;
   }
 
