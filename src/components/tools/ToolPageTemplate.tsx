@@ -1,11 +1,12 @@
 // src/components/tools/ToolPageTemplate.tsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Lock,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   Check,
   Play,
   Zap,
@@ -47,6 +48,7 @@ interface ToolPageTemplateProps {
 
 export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
   const { user, isAuthenticated, hasAccessToTool, login } = useSubscription();
+  const navigate = useNavigate();
 
   const userPlan = (user?.subscription_plan as string) || "none";
   const hasAccess = hasAccessToTool(tool.planRequired);
@@ -148,6 +150,17 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
         </div>
 
         <div className="max-w-5xl mx-auto px-6 relative z-10">
+          {/* Back Button */}
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-[#A9AAAC] hover:text-[#E1C37A] transition-colors mb-8 group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm">Back</span>
+          </motion.button>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -155,11 +168,9 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
           >
             {/* Category */}
             <span
-              className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6 ${
-                categoryColors[tool.category].bg
-              } ${categoryColors[tool.category].text} ${
-                categoryColors[tool.category].border
-              } border`}
+              className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6 ${categoryColors[tool.category].bg
+                } ${categoryColors[tool.category].text} ${categoryColors[tool.category].border
+                } border`}
             >
               {tool.category === "Corporate" ? (
                 <Sparkles className="w-3 h-3" />
@@ -234,7 +245,11 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
       {/* ================= BENEFITS ================= */}
       <section className="py-16">
         <div className="max-w-4xl mx-auto px-6">
-          <SectionHeading badge="Benefits" title="What you get." />
+          <SectionHeading
+            badge="Benefits"
+            title="What you get."
+            subtitle="Key features and advantages of this tool."
+          />
 
           <div className="grid md:grid-cols-2 gap-4 mt-12">
             {tool.mainBenefits.map((benefit, index) => (

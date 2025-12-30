@@ -26,10 +26,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
   // Close mobile menu and scroll to top on route change
   useEffect(() => {
     setMobileMenuOpen(false);
-    const timer = setTimeout(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    }, 50);
-    return () => clearTimeout(timer);
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, [location.pathname]);
 
   const { isAuthenticated, login } = useSubscription();
@@ -46,9 +43,8 @@ function LayoutContent({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#1A1A1C] text-[#D6D7D8] overflow-x-hidden">
       {/* ================= NAVIGATION ================= */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled ? "nav-glass py-3" : "bg-transparent py-5"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? "nav-glass py-3" : "bg-transparent py-5"
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
