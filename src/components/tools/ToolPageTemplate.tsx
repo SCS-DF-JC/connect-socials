@@ -1,6 +1,6 @@
 // src/components/tools/ToolPageTemplate.tsx
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Lock,
@@ -49,9 +49,13 @@ interface ToolPageTemplateProps {
 export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
   const { user, isAuthenticated, hasAccessToTool, login } = useSubscription();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const userPlan = (user?.subscription_plan as string) || "none";
   const hasAccess = hasAccessToTool(tool.planRequired);
+
+  // Get the referrer from location state, fallback to dashboard-preview
+  const referrerPath = (location.state as any)?.from || "/dashboard-preview";
 
   const categoryColors = {
     Core: {
@@ -154,7 +158,7 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(referrerPath)}
             className="flex items-center gap-2 text-[#A9AAAC] hover:text-[#E1C37A] transition-colors mb-8 group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

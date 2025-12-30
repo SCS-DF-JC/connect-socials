@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Lock, ArrowRight, Check, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSubscription } from "../subscription/useSubscription";
@@ -20,6 +20,7 @@ interface ToolCardProps {
   index: number;
   onMouseEnter: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave: () => void;
+  currentPath: string;
 }
 
 function ToolCard({
@@ -29,6 +30,7 @@ function ToolCard({
   index,
   onMouseEnter,
   onMouseLeave,
+  currentPath,
 }: ToolCardProps) {
   const { hasAccessToTool, user } = useSubscription();
 
@@ -38,10 +40,13 @@ function ToolCard({
 
   const Icon = tool.icon;
 
-  // ✅ ONLY NAVIGATE IF USER HAS ACCESS
+  // ✅ ONLY NAVIGATE IF USER HAS ACCESS - Pass referrer state
   const CardWrapper: any = hasAccess && tool.slug ? Link : "div";
   const cardProps = hasAccess && tool.slug
-    ? { to: `/tool?slug=${tool.slug}` }
+    ? {
+      to: `/tool?slug=${tool.slug}`,
+      state: { from: currentPath }
+    }
     : {};
 
   const handleClick = () => {
@@ -64,11 +69,10 @@ function ToolCard({
     >
       <CardWrapper {...cardProps} className="block">
         <div
-          className={`glass-card rounded-2xl p-6 h-full transition-all duration-300 cursor-pointer relative z-10 ${
-            hasAccess
-              ? "hover:border-green-500/30"
-              : "hover:border-[#E1C37A]/20"
-          }`}
+          className={`glass-card rounded-2xl p-6 h-full transition-all duration-300 cursor-pointer relative z-10 ${hasAccess
+            ? "hover:border-green-500/30"
+            : "hover:border-[#E1C37A]/20"
+            }`}
         >
           {/* ================= LOCK / ADMIN / UNLOCK ================= */}
           {!hasAccess ? (
@@ -98,9 +102,8 @@ function ToolCard({
           {/* ================= CONTENT ================= */}
           <div className={!hasAccess ? "opacity-60" : ""}>
             <div
-              className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${
-                tier === "Corporate" ? "gold-gradient" : "metallic-gradient"
-              }`}
+              className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center ${tier === "Corporate" ? "gold-gradient" : "metallic-gradient"
+                }`}
             >
               <Icon className="w-6 h-6 text-[#1A1A1C]" />
             </div>
@@ -108,11 +111,10 @@ function ToolCard({
             <div className="flex items-center gap-2 mb-2">
               <h3 className="font-semibold text-white">{tool.name}</h3>
               <span
-                className={`text-[10px] px-2 py-0.5 rounded-full ${
-                  tier === "Corporate"
-                    ? "bg-[#E1C37A]/20 text-[#E1C37A]"
-                    : "bg-[#D6D7D8]/20 text-[#D6D7D8]"
-                }`}
+                className={`text-[10px] px-2 py-0.5 rounded-full ${tier === "Corporate"
+                  ? "bg-[#E1C37A]/20 text-[#E1C37A]"
+                  : "bg-[#D6D7D8]/20 text-[#D6D7D8]"
+                  }`}
               >
                 {tier}
               </span>
@@ -139,6 +141,7 @@ export default function ToolGridWithHighlight({
   tier = "Core",
   onUnlockClick,
 }: ToolGridWithHighlightProps) {
+  const location = useLocation();
   const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({
     opacity: 0,
   });
@@ -195,6 +198,7 @@ export default function ToolGridWithHighlight({
             index={index}
             onMouseEnter={handleHover}
             onMouseLeave={clearHover}
+            currentPath={location.pathname}
           />
         ))}
       </div>
