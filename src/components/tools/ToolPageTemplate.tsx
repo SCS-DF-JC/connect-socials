@@ -55,7 +55,15 @@ export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
   const hasAccess = hasAccessToTool(tool.planRequired);
 
   // Get the referrer from URL parameter, fallback to dashboard-preview
-  const referrerPath = searchParams.get("from") || "/dashboard-preview";
+  const fromParam = searchParams.get("from");
+  const referrerPath = fromParam || "/dashboard-preview";
+
+  // Debug logging
+  console.log("🔍 ToolPageTemplate Debug:");
+  console.log("  - Full URL:", window.location.href);
+  console.log("  - Search Params (all):", Array.from(searchParams.entries()));
+  console.log("  - from parameter:", fromParam);
+  console.log("  - referrerPath:", referrerPath);
 
   const categoryColors = {
     Core: {

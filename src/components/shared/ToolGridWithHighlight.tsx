@@ -42,11 +42,19 @@ function ToolCard({
 
   // ✅ ONLY NAVIGATE IF USER HAS ACCESS - Pass referrer as URL param
   const CardWrapper: any = hasAccess && tool.slug ? Link : "div";
-  const cardProps = hasAccess && tool.slug
-    ? {
-      to: `/tool?slug=${tool.slug}&from=${encodeURIComponent(currentPath)}`
-    }
-    : {};
+  const targetUrl = hasAccess && tool.slug
+    ? `/tool?slug=${tool.slug}&from=${encodeURIComponent(currentPath)}`
+    : null;
+
+  const cardProps = targetUrl ? { to: targetUrl } : {};
+
+  // Debug logging
+  if (hasAccess && tool.slug) {
+    console.log("🔗 ToolCard Navigation Debug:");
+    console.log("  - Tool:", tool.name);
+    console.log("  - Current Path:", currentPath);
+    console.log("  - Target URL:", targetUrl);
+  }
 
   const handleClick = () => {
     // ✅ LOCKED USERS NEVER NAVIGATE
