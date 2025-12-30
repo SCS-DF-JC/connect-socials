@@ -26,8 +26,16 @@ export default function Tool() {
 
   const tool = getToolBySlug(slug);
 
-  // ✅ Invalid slug → dashboard
-  if (!tool) {
+  // Debug logging
+  console.log("🛠️ Tool.tsx Debug:");
+  console.log("  - slug:", slug);
+  console.log("  - tool found:", !!tool);
+  console.log("  - current path:", window.location.pathname);
+
+  // ✅ Invalid slug → dashboard (only redirect if there IS a slug but tool not found)
+  // Don't redirect if there's no slug at all (user might be navigating away)
+  if (slug && !tool) {
+    console.log("  ⚠️ REDIRECTING to dashboard-preview (invalid slug)");
     return <Navigate to="/dashboard-preview" replace />;
   }
 
