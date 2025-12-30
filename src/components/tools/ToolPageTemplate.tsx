@@ -1,6 +1,6 @@
 // src/components/tools/ToolPageTemplate.tsx
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Lock,
@@ -49,13 +49,13 @@ interface ToolPageTemplateProps {
 export default function ToolPageTemplate({ tool }: ToolPageTemplateProps) {
   const { user, isAuthenticated, hasAccessToTool, login } = useSubscription();
   const navigate = useNavigate();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const userPlan = (user?.subscription_plan as string) || "none";
   const hasAccess = hasAccessToTool(tool.planRequired);
 
-  // Get the referrer from location state, fallback to dashboard-preview
-  const referrerPath = (location.state as any)?.from || "/dashboard-preview";
+  // Get the referrer from URL parameter, fallback to dashboard-preview
+  const referrerPath = searchParams.get("from") || "/dashboard-preview";
 
   const categoryColors = {
     Core: {

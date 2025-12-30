@@ -40,12 +40,11 @@ function ToolCard({
 
   const Icon = tool.icon;
 
-  // ✅ ONLY NAVIGATE IF USER HAS ACCESS - Pass referrer state
+  // ✅ ONLY NAVIGATE IF USER HAS ACCESS - Pass referrer as URL param
   const CardWrapper: any = hasAccess && tool.slug ? Link : "div";
   const cardProps = hasAccess && tool.slug
     ? {
-      to: `/tool?slug=${tool.slug}`,
-      state: { from: currentPath }
+      to: `/tool?slug=${tool.slug}&from=${encodeURIComponent(currentPath)}`
     }
     : {};
 
