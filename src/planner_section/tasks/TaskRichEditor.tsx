@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Bold, Italic, List, ListChecks, Code, ToggleLeft, 
+import {
+  Bold, Italic, List, ListChecks, Code, ToggleLeft,
   Heading1, Heading2, Quote, Minus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,22 +17,24 @@ interface TaskRichEditorProps {
 
 export function TaskRichEditor({ value, onChange, placeholder, className }: TaskRichEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const isInternalChange = useRef(false);
+  const lastValueRef = useRef(value);
 
   // Sync external value changes
   useEffect(() => {
-    if (editorRef.current && !isInternalChange.current) {
+    // Only update if the value prop has changed to something different from what we last emitted
+    if (editorRef.current && value !== lastValueRef.current) {
       if (editorRef.current.innerHTML !== value) {
         editorRef.current.innerHTML = value || "";
       }
+      lastValueRef.current = value;
     }
-    isInternalChange.current = false;
   }, [value]);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
-      isInternalChange.current = true;
-      onChange(editorRef.current.innerHTML);
+      const currentHtml = editorRef.current.innerHTML;
+      lastValueRef.current = currentHtml;
+      onChange(currentHtml);
     }
   }, [onChange]);
 
@@ -93,7 +95,7 @@ export function TaskRichEditor({ value, onChange, placeholder, className }: Task
     <div className={cn("border border-border/50 rounded-lg bg-surface overflow-hidden", className)}>
       {/* Toolbar */}
       <div className="flex items-center gap-0.5 p-1 border-b border-border/50 bg-surface/80 flex-wrap">
-        {toolbarButtons.map((btn, idx) => 
+        {toolbarButtons.map((btn, idx) =>
           btn.type === "separator" ? (
             <Separator key={idx} orientation="vertical" className="h-6 mx-1" />
           ) : (

@@ -43,6 +43,49 @@ const statusColors: Record<TaskStatus, string> = {
 export function TaskDetailDrawer({ task, open, onClose, onUpdateTask, onDeleteTask, initialFullscreen = false }: TaskDetailDrawerProps) {
   const [isFullscreen, setIsFullscreen] = useState(initialFullscreen);
 
+  // Local state for text fields to allow for snappy editing without cursor jumping
+  const [localTitle, setLocalTitle] = useState("");
+  const [localDescription, setLocalDescription] = useState("");
+  const [localComments, setLocalComments] = useState("");
+
+  // Sync local state when task changes (only when ID changes to avoid overwriting while typing)
+  useEffect(() => {
+    if (task) {
+      setLocalTitle(task.title);
+      setLocalDescription(task.description);
+      setLocalComments(task.comments || "");
+    }
+  }, [task?.id, open]);
+
+  // Debounced update for text fields
+  useEffect(() => {
+    if (!task || !open) return;
+
+    const timeoutId = setTimeout(() => {
+      const updates: Partial<Task> = {};
+      let hasChanges = false;
+
+      if (localTitle !== task.title) {
+        updates.title = localTitle;
+        hasChanges = true;
+      }
+      if (localDescription !== task.description) {
+        updates.description = localDescription;
+        hasChanges = true;
+      }
+      if (localComments !== (task.comments || "")) {
+        updates.comments = localComments;
+        hasChanges = true;
+      }
+
+      if (hasChanges) {
+        onUpdateTask(task.id, updates);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [localTitle, localDescription, localComments, task, onUpdateTask, open]);
+
   useEffect(() => {
     setIsFullscreen(initialFullscreen);
   }, [initialFullscreen]);
@@ -56,6 +99,16 @@ export function TaskDetailDrawer({ task, open, onClose, onUpdateTask, onDeleteTa
   };
 
   const handleClose = () => {
+    // Force final update on close if there are changes
+    const updates: Partial<Task> = {};
+    if (localTitle !== task.title) updates.title = localTitle;
+    if (localDescription !== task.description) updates.description = localDescription;
+    if (localComments !== (task.comments || "")) updates.comments = localComments;
+
+    if (Object.keys(updates).length > 0) {
+      onUpdateTask(task.id, updates);
+    }
+
     setIsFullscreen(false);
     onClose();
   };
@@ -84,8 +137,8 @@ export function TaskDetailDrawer({ task, open, onClose, onUpdateTask, onDeleteTa
       <div>
         <Label className="text-sm font-medium text-foreground mb-2 block">Title</Label>
         <Input
-          value={task.title}
-          onChange={(e) => onUpdateTask(task.id, { title: e.target.value })}
+          value={localTitle}
+          onChange={(e) => setLocalTitle(e.target.value)}
           className="bg-surface border-border/50"
         />
       </div>
@@ -97,8 +150,8 @@ export function TaskDetailDrawer({ task, open, onClose, onUpdateTask, onDeleteTa
           <span className="text-xs text-muted-foreground ml-2">(supports checklists, toggles, code)</span>
         </Label>
         <TaskRichEditor
-          value={task.description}
-          onChange={(value) => onUpdateTask(task.id, { description: value })}
+          value={localDescription}
+          onChange={(value) => setLocalDescription(value)}
           placeholder="Add description with rich formatting..."
         />
       </div>
@@ -216,8 +269,8 @@ export function TaskDetailDrawer({ task, open, onClose, onUpdateTask, onDeleteTa
       <div>
         <Label className="text-sm font-medium text-foreground mb-2 block">Comments / Notes</Label>
         <Textarea
-          value={task.comments || ""}
-          onChange={(e) => onUpdateTask(task.id, { comments: e.target.value })}
+          value={localComments}
+          onChange={(e) => setLocalComments(e.target.value)}
           placeholder="Add internal notes about this task..."
           className="bg-surface border-border/50 min-h-[100px] resize-none"
         />
