@@ -17,16 +17,25 @@ interface TaskRichEditorProps {
 
 export function TaskRichEditor({ value, onChange, placeholder, className }: TaskRichEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const lastValueRef = useRef(value);
+  const lastValueRef = useRef<string>("");
+  const isFirstMountRef = useRef(true);
 
-  // Sync external value changes
+  // Initialize content on mount and sync external value changes
   useEffect(() => {
-    // Only update if the value prop has changed to something different from what we last emitted
-    if (editorRef.current && value !== lastValueRef.current) {
-      if (editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value || "";
-      }
-      lastValueRef.current = value;
+    if (!editorRef.current) return;
+
+    // Always initialize on first mount
+    if (isFirstMountRef.current) {
+      editorRef.current.innerHTML = value || "";
+      lastValueRef.current = value || "";
+      isFirstMountRef.current = false;
+      return;
+    }
+
+    // Only sync if value changed externally (not from our own onChange)
+    if (value !== lastValueRef.current) {
+      editorRef.current.innerHTML = value || "";
+      lastValueRef.current = value || "";
     }
   }, [value]);
 
