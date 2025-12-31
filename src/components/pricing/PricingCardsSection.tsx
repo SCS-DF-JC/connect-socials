@@ -87,6 +87,13 @@ export default function PricingCardsSection({
                     </div>
                   </div>
                 )}
+                
+                <div className="absolute top-4 right-4">
+  <div className="px-3 py-1 rounded-full bg-[#2A2A2C] border border-[#3B3C3E] text-[11px] font-semibold uppercase tracking-wide text-[#E1C37A]">
+    Coming Soon
+  </div>
+</div>
+
 
                 <div className="w-14 h-14 rounded-2xl mb-6 flex items-center justify-center metallic-gradient">
                   <Icon className="w-7 h-7 text-[#1A1A1C]" />
