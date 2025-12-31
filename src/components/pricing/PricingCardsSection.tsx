@@ -1,13 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, Zap, Building2, Sparkles, MessageSquare, Loader2, Lock } from "lucide-react";
+import {
+  Check,
+  Zap,
+  Building2,
+  Sparkles,
+  MessageSquare,
+  Loader2,
+  Lock,
+} from "lucide-react";
 
-export default function PricingCardsSection({ 
-  plans, 
-  isAnnual, 
-  loadingPlan, 
-  onSubscribe 
+export default function PricingCardsSection({
+  plans,
+  isAnnual,
+  loadingPlan,
+  onSubscribe,
 }) {
   const [highlightStyle, setHighlightStyle] = useState({ opacity: 0 });
   const [activeIndex, setActiveIndex] = useState(1);
@@ -16,7 +24,7 @@ export default function PricingCardsSection({
   const iconMap = {
     Starter: Zap,
     Growth: Building2,
-    Enterprise: Sparkles
+    Enterprise: Sparkles,
   };
 
   const moveHighlightToIndex = (index) => {
@@ -30,7 +38,9 @@ export default function PricingCardsSection({
 
     setHighlightStyle({
       opacity: 1,
-      transform: `translate(${cardRect.left - gridRect.left}px, ${cardRect.top - gridRect.top}px)`,
+      transform: `translate(${cardRect.left - gridRect.left}px, ${
+        cardRect.top - gridRect.top
+      }px)`,
       width: `${cardRect.width}px`,
       height: `${cardRect.height}px`,
     });
@@ -52,7 +62,8 @@ export default function PricingCardsSection({
         <div
           className="absolute rounded-[2rem] pointer-events-none transition-all duration-300"
           style={{
-            background: "radial-gradient(circle at top, rgba(225,195,122,0.25), rgba(26,26,28,0.8))",
+            background:
+              "radial-gradient(circle at top, rgba(225,195,122,0.25), rgba(26,26,28,0.8))",
             boxShadow: "0 0 60px rgba(225,195,122,0.4)",
             backdropFilter: "blur(12px)",
             zIndex: 0,
@@ -60,7 +71,10 @@ export default function PricingCardsSection({
           }}
         />
 
-        <div ref={gridRef} className="relative z-10 grid md:grid-cols-3 gap-6 lg:gap-8">
+        <div
+          ref={gridRef}
+          className="relative z-10 grid md:grid-cols-3 gap-6 lg:gap-8"
+        >
           {plans.map((plan, index) => {
             const isActive = index === activeIndex;
             const Icon = iconMap[plan.name] || Zap;
@@ -87,20 +101,24 @@ export default function PricingCardsSection({
                     </div>
                   </div>
                 )}
-                
-                <div className="absolute top-4 right-4">
-  <div className="px-3 py-1 rounded-full bg-[#2A2A2C] border border-[#3B3C3E] text-[11px] font-semibold uppercase tracking-wide text-[#E1C37A]">
-    Coming Soon
-  </div>
-</div>
 
+                {/* Coming Soon badge for all plans */}
+                <div className="absolute top-4 right-4">
+                  <div className="px-3 py-1 rounded-full bg-[#2A2A2C] border border-[#3B3C3E] text-[11px] font-semibold uppercase tracking-wide text-[#E1C37A]">
+                    Coming Soon
+                  </div>
+                </div>
 
                 <div className="w-14 h-14 rounded-2xl mb-6 flex items-center justify-center metallic-gradient">
                   <Icon className="w-7 h-7 text-[#1A1A1C]" />
                 </div>
 
-                <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                <p className="text-sm text-[#A9AAAC] mb-6">{plan.description}</p>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {plan.name}
+                </h3>
+                <p className="text-sm text-[#A9AAAC] mb-6">
+                  {plan.description}
+                </p>
 
                 <div className="mb-8">
                   {plan.monthlyPrice ? (
@@ -111,7 +129,9 @@ export default function PricingCardsSection({
                       <span className="text-[#5B5C60] ml-1">/month</span>
                     </>
                   ) : (
-                    <span className="text-3xl font-bold text-white">Custom</span>
+                    <span className="text-3xl font-bold text-white">
+                      Custom
+                    </span>
                   )}
                 </div>
 
@@ -126,15 +146,55 @@ export default function PricingCardsSection({
                   ))}
                 </div>
 
+                {/* Locked CTA */}
                 <div className="mt-auto">
-  <div className="w-full h-12 rounded-xl flex items-center justify-center gap-2 bg-[#2A2A2C] text-[#A9AAAC] font-semibold cursor-not-allowed border border-[#3B3C3E]">
-    <Lock className="w-4 h-4" />
-    Coming Soon
-  </div>
-</div>
+                  <div className="w-full h-12 rounded-xl flex items-center justify-center gap-2 bg-[#2A2A2C] text-[#A9AAAC] font-semibold cursor-not-allowed border border-[#3B3C3E]">
+                    <Lock className="w-4 h-4" />
+                    Coming Soon
+                  </div>
+                </div>
               </motion.div>
             );
           })}
+        </div>
+
+        {/* Early Access Plan Section */}
+        <div className="relative z-10 mt-16 max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Early Access Plan
+          </h2>
+          <p className="text-sm md:text-base text-[#A9AAAC] mb-6">
+            Get started with the SCS WordPress Automation Engine while we
+            finish the full automation suite. Enjoy a 3-day free trial, then
+            £20/month. Cancel anytime.
+          </p>
+
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-bold text-white">£20</span>
+              <span className="text-[#5B5C60] text-sm">
+                /month after 3-day free trial
+              </span>
+            </div>
+
+            <ul className="text-sm text-[#D6D7D8] space-y-1">
+              <li>WordPress SEO publishing automation</li>
+              <li>Blog & content engine for articles</li>
+              <li>Founders pricing — locked in while active</li>
+            </ul>
+
+            <button
+              onClick={() => onSubscribe("Early Access")}
+              className="mt-4 w-full sm:w-auto px-8 h-12 rounded-xl btn-gold flex items-center justify-center gap-2"
+            >
+              Start 3-Day Free Trial
+            </button>
+
+            <p className="text-xs text-[#A9AAAC] mt-2 max-w-md mx-auto">
+              Only the WordPress automation engine is live right now. The full
+              SCS Starter, Growth & Enterprise plans are coming soon.
+            </p>
+          </div>
         </div>
       </div>
     </section>
