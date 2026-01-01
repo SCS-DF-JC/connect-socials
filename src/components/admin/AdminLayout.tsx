@@ -10,11 +10,12 @@ import LeadsPage from '@/pages/admin/LeadsPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
 import LeadDetailPage from '@/pages/admin/LeadDetailPage';
 import StrategyCallDetailPage from '@/pages/admin/StrategyCallDetailPage';
+import SubscribersPage from '@/pages/admin/subscriberspage'; // ✅ NEW
 import '@/styles/admin.css';
 
-type Section = 'dashboard' | 'leads' | 'settings';
+type Section = 'dashboard' | 'leads' | 'subscribers' | 'settings'; // ✅ NEW: add 'subscribers'
 
-const sectionOrder: Section[] = ['dashboard', 'leads', 'settings'];
+const sectionOrder: Section[] = ['dashboard', 'leads', 'subscribers', 'settings']; // ✅ include subscribers
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -38,9 +39,18 @@ export function AdminLayout() {
 
   // Determine initial section from URL
   const getInitialSection = (): Section => {
-    if (location.pathname === '/admin/leads' || location.pathname.startsWith('/admin/leads/')) return 'leads';
-    if (location.pathname === '/admin/settings') return 'settings';
-    if (location.pathname.startsWith('/admin/strategy-calls/')) return 'leads';
+    if (location.pathname === '/admin/leads' || location.pathname.startsWith('/admin/leads/')) {
+      return 'leads';
+    }
+    if (location.pathname.startsWith('/admin/strategy-calls/')) {
+      return 'leads';
+    }
+    if (location.pathname === '/admin/subscribers') { // ✅ NEW
+      return 'subscribers';
+    }
+    if (location.pathname === '/admin/settings') {
+      return 'settings';
+    }
     return 'dashboard';
   };
 
@@ -55,17 +65,21 @@ export function AdminLayout() {
     }
   }, [location.pathname]);
 
-  const handleSectionChange = useCallback((newSection: Section) => {
-    const currentIndex = sectionOrder.indexOf(activeSection);
-    const newIndex = sectionOrder.indexOf(newSection);
-    setDirection(newIndex > currentIndex ? 1 : -1);
-    setActiveSection(newSection);
+  const handleSectionChange = useCallback(
+    (newSection: Section) => {
+      const currentIndex = sectionOrder.indexOf(activeSection);
+      const newIndex = sectionOrder.indexOf(newSection);
+      setDirection(newIndex > currentIndex ? 1 : -1);
+      setActiveSection(newSection);
 
-    // Update URL for bookmarking/refresh support
-    if (newSection === 'dashboard') navigate('/admin');
-    else if (newSection === 'leads') navigate('/admin/leads');
-    else if (newSection === 'settings') navigate('/admin/settings');
-  }, [activeSection, navigate]);
+      // Update URL for bookmarking/refresh support
+      if (newSection === 'dashboard') navigate('/admin');
+      else if (newSection === 'leads') navigate('/admin/leads');
+      else if (newSection === 'subscribers') navigate('/admin/subscribers'); // ✅ NEW
+      else if (newSection === 'settings') navigate('/admin/settings');
+    },
+    [activeSection, navigate]
+  );
 
   const renderSection = useMemo(() => {
     switch (activeSection) {
@@ -79,6 +93,8 @@ export function AdminLayout() {
           return <StrategyCallDetailPage />;
         }
         return <LeadsPage />;
+      case 'subscribers': // ✅ NEW
+        return <SubscribersPage />;
       case 'settings':
         return <SettingsPage />;
       default:
