@@ -7,8 +7,8 @@ export const PLANS = {
     id: "starter",
     name: "Starter",
     description: "Essential AI automations for growing businesses",
-    monthlyPrice: 397,
-    annualPrice: 317,
+    // monthlyPrice: 397,
+    // annualPrice: 317,
     annualTotal: 3804, // $317 x 12
     stripePriceIdMonthly: "price_starter_monthly", // Update after running setupStripeProducts
     stripePriceIdAnnual: "price_starter_annual",   // Update after running setupStripeProducts
@@ -32,8 +32,8 @@ export const PLANS = {
     id: "growth",
     name: "Growth",
     description: "Full automation suite for scaling operations",
-    monthlyPrice: 697,
-    annualPrice: 557,
+    // monthlyPrice: 697,
+    // annualPrice: 557,
     annualTotal: 6684, // $557 x 12
     stripePriceIdMonthly: "price_growth_monthly", // Update after running setupStripeProducts
     stripePriceIdAnnual: "price_growth_annual",   // Update after running setupStripeProducts
@@ -70,8 +70,8 @@ export const PLANS = {
     id: "enterprise",
     name: "Enterprise",
     description: "Enterprise-grade AI for serious operators",
-    monthlyPrice: 1497,
-    annualPrice: 1197,
+    // monthlyPrice: 1497,
+    // annualPrice: 1197,
     annualTotal: 14364, // $1197 x 12
     stripePriceIdMonthly: "price_enterprise_monthly", // Update after running setupStripeProducts
     stripePriceIdAnnual: "price_enterprise_annual",   // Update after running setupStripeProducts
