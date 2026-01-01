@@ -1,6 +1,11 @@
-import React from 'react';
-import { LayoutDashboard, Globe } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, Globe, AlertCircle, RefreshCcw } from 'lucide-react';
 import WordPressSiteCard, { WordPressSite } from './WordPressSiteCard';
+import StatsOverview from './components/StatsOverview';
+import PerformanceChart from './components/PerformanceChart';
+import RecentPosts from './components/RecentPosts';
+import { SiteStats, fetchSiteStats } from './utils/wpApi';
+import GoldButton from './GoldButton';
 
 interface DashboardContentProps {
     sites: WordPressSite[];
@@ -9,6 +14,69 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ sites, onAddSite, onRemoveSite }: DashboardContentProps) {
+    const [stats, setStats] = useState<SiteStats>({
+        totalPosts: 0,
+        totalComments: 0,
+        totalPages: 0,
+        recentPosts: [],
+        postsByDate: {}
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
+
+    const refreshStats = async () => {
+        setIsLoading(true);
+        if (sites.length === 0) {
+            setIsLoading(false);
+            return;
+        }
+
+        // If 'all', we might want to aggregate, but for now let's just fetch the *first* site to avoid complexity
+        // or fetch all and sum them up?
+        // Fetching all might be slow. Let's fetch the selected one or the first one.
+
+        const targetSites = selectedSiteId === 'all' ? sites : sites.filter(s => s.id === selectedSiteId);
+
+        // Aggregate stats
+        let aggStats: SiteStats = {
+            totalPosts: 0,
+            totalComments: 0,
+            totalPages: 0,
+            recentPosts: [],
+            postsByDate: {}
+        };
+
+        try {
+            const results = await Promise.all(targetSites.map(s => fetchSiteStats(s)));
+
+            results.forEach(res => {
+                aggStats.totalPosts += res.totalPosts;
+                aggStats.totalComments += res.totalComments;
+                aggStats.totalPages += res.totalPages;
+                aggStats.recentPosts = [...aggStats.recentPosts, ...res.recentPosts];
+
+                // Merge dates
+                Object.entries(res.postsByDate).forEach(([date, count]) => {
+                    aggStats.postsByDate[date] = (aggStats.postsByDate[date] || 0) + count;
+                });
+            });
+
+            // Sort recent posts by date descending
+            aggStats.recentPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            // Limit to 10
+            aggStats.recentPosts = aggStats.recentPosts.slice(0, 10);
+
+            setStats(aggStats);
+        } catch (e) {
+            console.error("Failed to fetch stats", e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        refreshStats();
+    }, [sites, selectedSiteId]);
 
     return (
         <div>
@@ -20,10 +88,45 @@ export default function DashboardContent({ sites, onAddSite, onRemoveSite }: Das
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-[#D6D7D8]">Dashboard</h2>
-                        <p className="text-[#A9AAAC] text-sm">Manage your WordPress sites</p>
+                        <p className="text-[#A9AAAC] text-sm">Manage your WordPress sites & SEO</p>
                     </div>
                 </div>
+
+                <div className="flex items-center gap-3">
+                    {sites.length > 0 && (
+                        <select
+                            value={selectedSiteId}
+                            onChange={(e) => setSelectedSiteId(e.target.value)}
+                            className="bg-[#1A1A1C] border border-[#333] text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-[#E1C37A]"
+                        >
+                            <option value="all">All Sites</option>
+                            {sites.map(s => (
+                                <option key={s.id} value={s.id}>{s.site_name}</option>
+                            ))}
+                        </select>
+                    )}
+                    <GoldButton onClick={refreshStats} disabled={isLoading} className="px-4 py-2 h-10">
+                        <RefreshCcw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    </GoldButton>
+                </div>
             </div>
+
+            {sites.length === 0 ? (
+                <div className="mb-10 text-center p-10 bg-[#3B3C3E]/20 rounded-2xl border border-white/5 mx-auto max-w-2xl">
+                    <AlertCircle className="w-12 h-12 text-[#E1C37A] mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-[#D6D7D8]">No Sites Connected</h3>
+                    <p className="text-[#A9AAAC] mt-2">Connect a WordPress site below to see real-time analytics.</p>
+                </div>
+            ) : (
+                <>
+                    <StatsOverview stats={stats} isLoading={isLoading} />
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                        <PerformanceChart stats={stats} isLoading={isLoading} />
+                        <RecentPosts posts={stats.recentPosts} isLoading={isLoading} />
+                    </div>
+                </>
+            )}
 
             {/* WordPress Sites */}
             <div className="flex items-center gap-3 mb-4">
