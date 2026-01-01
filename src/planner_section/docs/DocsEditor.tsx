@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import DOMPurify from "dompurify";
 import { DocPage } from "../types";
 import { Input } from "@/components/ui/input";
@@ -58,6 +58,20 @@ const sanitizeText = (text: string): string => {
 
 export function DocsEditor({ doc, onUpdateTitle, onUpdateContent }: DocsEditorProps) {
   const [activeCommands, setActiveCommands] = useState<Set<string>>(new Set());
+  const editorRef = useRef<HTMLDivElement>(null);
+  const lastContentRef = useRef<string>("");
+
+  // Initialize content when doc changes
+  useEffect(() => {
+    if (editorRef.current && doc) {
+      const sanitized = DOMPurify.sanitize(doc.content, PURIFY_CONFIG);
+      // Only update if content actually changed (not from our own input)
+      if (sanitized !== lastContentRef.current) {
+        editorRef.current.innerHTML = sanitized;
+        lastContentRef.current = sanitized;
+      }
+    }
+  }, [doc?.id, doc?.content]); // Only re-run when doc ID or content changes externally
 
   const executeCommand = useCallback((command: string) => {
     const selection = window.getSelection();
@@ -188,13 +202,15 @@ export function DocsEditor({ doc, onUpdateTitle, onUpdateContent }: DocsEditorPr
       {/* Editor */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div
+          ref={editorRef}
           contentEditable
           suppressContentEditableWarning
           onInput={(e) => {
-            const sanitized = DOMPurify.sanitize(e.currentTarget.innerHTML, PURIFY_CONFIG);
+            const currentContent = e.currentTarget.innerHTML;
+            const sanitized = DOMPurify.sanitize(currentContent, PURIFY_CONFIG);
+            lastContentRef.current = sanitized;
             onUpdateContent(sanitized);
           }}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc.content, PURIFY_CONFIG) }}
           className={cn(
             "min-h-[400px] p-4 bg-surface rounded-lg border border-border/50",
             "focus:outline-none focus:ring-2 focus:ring-primary/30",
