@@ -11,6 +11,7 @@ import { DocAttachments } from "./DocAttachments";
 
 interface DocsMetadataPanelProps {
   doc: DocPage | null;
+  localNotes: string;
   onUpdateTags: (tags: DocTag[]) => void;
   onUpdateNotes: (notes: string) => void;
   onDeleteDoc?: () => void;
@@ -26,6 +27,7 @@ const tagColors: Record<DocTag, string> = {
 
 export function DocsMetadataPanel({
   doc,
+  localNotes,
   onUpdateTags,
   onUpdateNotes,
   onDeleteDoc,
@@ -112,7 +114,7 @@ export function DocsMetadataPanel({
           Notes
         </Label>
         <Textarea
-          value={doc.notes || ""}
+          value={localNotes}
           onChange={(e) => onUpdateNotes(e.target.value)}
           placeholder="Add notes about this document..."
           className="bg-surface border-border/50 min-h-[100px] text-sm resize-none"

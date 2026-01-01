@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useDocs } from "../store/DataProvider";
 import { DocTag } from "../types";
 import { DocsSidebarList } from "../docs/DocsSidebarList";
@@ -30,12 +30,26 @@ export function DocsView() {
 
   const selectedDoc = docs.find((d) => d.id === selectedDocId) || null;
 
+  // Local state for editing to prevent cursor issues
+  const [localTitle, setLocalTitle] = useState("");
+  const [localNotes, setLocalNotes] = useState("");
+  const titleUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const notesUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Auto-select first doc on mount or when selection is invalid
   useEffect(() => {
     if (docs.length > 0 && (!selectedDocId || !docs.find((d) => d.id === selectedDocId))) {
       setSelectedDocId(docs[0].id);
     }
   }, [docs, selectedDocId]);
+
+  // Sync local state when doc changes
+  useEffect(() => {
+    if (selectedDoc) {
+      setLocalTitle(selectedDoc.title);
+      setLocalNotes(selectedDoc.notes || "");
+    }
+  }, [selectedDoc?.id]); // Only update when switching docs
 
   const handleNewDoc = async () => {
     const creatorName = user?.firstName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "Admin";
@@ -48,11 +62,20 @@ export function DocsView() {
     setSelectedDocId(newDoc.id);
   };
 
-  const handleUpdateTitle = async (title: string) => {
-    if (selectedDocId) {
-      await updateDoc(selectedDocId, { title });
+  // Debounced title update
+  const handleUpdateTitle = useCallback((title: string) => {
+    setLocalTitle(title); // Update local state immediately
+
+    if (titleUpdateTimeoutRef.current) {
+      clearTimeout(titleUpdateTimeoutRef.current);
     }
-  };
+
+    titleUpdateTimeoutRef.current = setTimeout(() => {
+      if (selectedDocId) {
+        updateDoc(selectedDocId, { title });
+      }
+    }, 500); // 500ms debounce
+  }, [selectedDocId, updateDoc]);
 
   const handleUpdateContent = async (content: string) => {
     if (selectedDocId) {
@@ -66,11 +89,20 @@ export function DocsView() {
     }
   };
 
-  const handleUpdateNotes = async (notes: string) => {
-    if (selectedDocId) {
-      await updateDoc(selectedDocId, { notes });
+  // Debounced notes update
+  const handleUpdateNotes = useCallback((notes: string) => {
+    setLocalNotes(notes); // Update local state immediately
+
+    if (notesUpdateTimeoutRef.current) {
+      clearTimeout(notesUpdateTimeoutRef.current);
     }
-  };
+
+    notesUpdateTimeoutRef.current = setTimeout(() => {
+      if (selectedDocId) {
+        updateDoc(selectedDocId, { notes });
+      }
+    }, 500); // 500ms debounce
+  }, [selectedDocId, updateDoc]);
 
   const handleDeleteDoc = async () => {
     if (selectedDocId) {
@@ -109,6 +141,7 @@ export function DocsView() {
       <div className="flex-1 min-w-0 bg-background">
         <DocsEditor
           doc={selectedDoc}
+          localTitle={localTitle}
           onUpdateTitle={handleUpdateTitle}
           onUpdateContent={handleUpdateContent}
         />
@@ -118,6 +151,7 @@ export function DocsView() {
       <div className="w-[260px] border-l border-border bg-card/50 flex-shrink-0 overflow-y-auto">
         <DocsMetadataPanel
           doc={selectedDoc}
+          localNotes={localNotes}
           onUpdateTags={handleUpdateTags}
           onUpdateNotes={handleUpdateNotes}
           onDeleteDoc={handleDeleteDoc}

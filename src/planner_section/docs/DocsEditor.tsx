@@ -29,6 +29,7 @@ const PURIFY_CONFIG = {
 
 interface DocsEditorProps {
   doc: DocPage | null;
+  localTitle: string;
   onUpdateTitle: (title: string) => void;
   onUpdateContent: (content: string) => void;
 }
@@ -56,7 +57,7 @@ const sanitizeText = (text: string): string => {
   return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 };
 
-export function DocsEditor({ doc, onUpdateTitle, onUpdateContent }: DocsEditorProps) {
+export function DocsEditor({ doc, localTitle, onUpdateTitle, onUpdateContent }: DocsEditorProps) {
   const [activeCommands, setActiveCommands] = useState<Set<string>>(new Set());
   const editorRef = useRef<HTMLDivElement>(null);
   const isUpdatingRef = useRef(false);
@@ -186,7 +187,7 @@ export function DocsEditor({ doc, onUpdateTitle, onUpdateContent }: DocsEditorPr
       {/* Title */}
       <div className="p-6 pb-4">
         <Input
-          value={doc.title}
+          value={localTitle}
           onChange={(e) => onUpdateTitle(e.target.value)}
           placeholder="Untitled Document"
           className="text-2xl font-semibold bg-transparent border-none px-0 h-auto focus-visible:ring-0 text-foreground placeholder:text-muted-foreground"
