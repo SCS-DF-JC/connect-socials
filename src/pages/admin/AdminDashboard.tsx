@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, UserPlus, Clock, Trophy, XCircle, Calendar, CalendarCheck, CalendarClock, CheckCircle, Loader2 } from 'lucide-react';
+import {
+  Users,
+  UserPlus,
+  Clock,
+  Trophy,
+  XCircle,
+  Calendar,
+  CalendarCheck,
+  CalendarClock,
+  CheckCircle,
+  Loader2,
+} from 'lucide-react';
 import { StatCard } from '@/components/admin/dashboard/StatCard';
 import { PipelineChart } from '@/components/admin/dashboard/PipelineChart';
 import { ActivityFeed } from '@/components/admin/dashboard/ActivityFeed';
@@ -23,13 +34,20 @@ interface DashboardStats {
     pending: number;
     completed: number;
   };
+  subscriptions: {
+    total: number;
+    active: number;
+    trialing: number;
+    canceled: number;
+  };
 }
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     leads: { total: 0, new: 0, inProgress: 0, won: 0, lost: 0 },
-    calls: { today: 0, week: 0, pending: 0, completed: 0 }
+    calls: { today: 0, week: 0, pending: 0, completed: 0 },
+    subscriptions: { total: 0, active: 0, trialing: 0, canceled: 0 },
   });
 
   useEffect(() => {
@@ -38,23 +56,26 @@ export default function AdminDashboard() {
         setLoading(true);
 
         // 1. Fetch Leads Stats
-        // We select * because the exact column names for status/score might differ or be missing
         const { data: leads, error: leadsError } = await supabase
           .from('leads')
           .select('*');
 
         if (leadsError) {
-          console.warn("Leads fetch info:", leadsError);
+          console.warn('Leads fetch info:', leadsError);
         }
 
         const leadsData = leads || [];
 
-        // Process Leads - Use optional chaining and fallbacks for columns that might be renamed
         const total = leadsData.length;
-        const newLeads = leadsData.filter(l => (l.status === 'new' || l.stage === 'new' || !l.status)).length;
-        const won = leadsData.filter(l => l.status === 'won' || l.stage === 'won').length;
-        const lost = leadsData.filter(l => l.status === 'lost' || l.stage === 'lost').length;
-        // In Progress = everything else
+        const newLeads = leadsData.filter(
+          (l) => l.status === 'new' || l.stage === 'new' || !l.status
+        ).length;
+        const won = leadsData.filter(
+          (l) => l.status === 'won' || l.stage === 'won'
+        ).length;
+        const lost = leadsData.filter(
+          (l) => l.status === 'lost' || l.stage === 'lost'
+        ).length;
         const inProgress = total - (newLeads + won + lost);
 
         // 2. Fetch Calls Stats
@@ -66,15 +87,18 @@ export default function AdminDashboard() {
 
           if (callsError) {
             if (callsError.code === 'PGRST116' || callsError.code === '42P01') {
-              console.warn("Table strategy_calls does not exist yet.");
+              console.warn('Table strategy_calls does not exist yet.');
             } else {
-              console.warn("Calls fetch info:", callsError);
+              console.warn('Calls fetch info:', callsError);
             }
           } else {
             callsData = calls || [];
           }
         } catch (e) {
-          console.warn("Strategy calls table fetch failed - might not exist");
+          console.warn(
+            'Strategy calls table fetch failed - might not exist',
+            e
+          );
         }
 
         const today = new Date();
@@ -84,27 +108,60 @@ export default function AdminDashboard() {
         const weekStart = new Date();
         weekStart.setDate(weekStart.getDate() - 7);
 
-        const callsToday = callsData.filter(c => {
+        const callsToday = callsData.filter((c) => {
           const d = new Date(c.preferred_time || c.created_at);
           return d >= startOfToday && d <= endOfToday;
         }).length;
 
-        const callsWeek = callsData.filter(c => {
+        const callsWeek = callsData.filter((c) => {
           const d = new Date(c.preferred_time || c.created_at);
           return d >= weekStart;
         }).length;
 
-        const pending = callsData.filter(c => c.status === 'pending').length;
-        const completed = callsData.filter(c => c.status === 'completed').length;
+        const pending = callsData.filter((c) => c.status === 'pending').length;
+        const completed = callsData.filter(
+          (c) => c.status === 'completed'
+        ).length;
 
+        // 3. Fetch Stripe subscription stats (Early Access plan)
+        let subscriptionStats = {
+          total: 0,
+          active: 0,
+          trialing: 0,
+          canceled: 0,
+        };
+
+        try {
+          const res = await fetch('/api/admin-stripe-subscriptions');
+          if (res.ok) {
+            const json = await res.json();
+            if (json?.stats) {
+              subscriptionStats = {
+                total: json.stats.total ?? 0,
+                active: json.stats.active ?? 0,
+                trialing: json.stats.trialing ?? 0,
+                canceled: json.stats.canceled ?? 0,
+              };
+            }
+          } else {
+            console.warn(
+              'Stripe admin subscriptions endpoint returned non-200:',
+              res.status
+            );
+          }
+        } catch (err) {
+          console.warn('Failed to load Stripe subscription stats:', err);
+        }
+
+        // 4. Update state
         setStats({
           leads: { total, new: newLeads, inProgress, won, lost },
-          calls: { today: callsToday, week: callsWeek, pending, completed }
+          calls: { today: callsToday, week: callsWeek, pending, completed },
+          subscriptions: subscriptionStats,
         });
-
       } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
-        toast.error("Failed to load dashboard data");
+        console.error('Error fetching dashboard stats:', error);
+        toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -129,8 +186,12 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-2xl font-bold text-white uppercase tracking-tight">Dashboard</h1>
-        <p className="text-gray-400 mt-1">Overview of your leads and pipeline</p>
+        <h1 className="text-2xl font-bold text-white uppercase tracking-tight">
+          Dashboard
+        </h1>
+        <p className="text-gray-400 mt-1">
+          Overview of your leads, pipeline & subscriptions
+        </p>
       </motion.div>
 
       {/* Lead Stats Row */}
@@ -201,6 +262,38 @@ export default function AdminDashboard() {
           icon={CheckCircle}
           variant="success"
           delay={0.5}
+        />
+      </div>
+
+      {/* Stripe Subscription Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total Subscribers"
+          value={stats.subscriptions.total}
+          icon={Users}
+          variant="white"
+          delay={0.55}
+        />
+        <StatCard
+          title="Active Subscriptions"
+          value={stats.subscriptions.active}
+          icon={CheckCircle}
+          variant="success"
+          delay={0.6}
+        />
+        <StatCard
+          title="On Trial"
+          value={stats.subscriptions.trialing}
+          icon={Clock}
+          variant="gold"
+          delay={0.65}
+        />
+        <StatCard
+          title="Cancelled / Cancelling"
+          value={stats.subscriptions.canceled}
+          icon={XCircle}
+          variant="danger"
+          delay={0.7}
         />
       </div>
 
