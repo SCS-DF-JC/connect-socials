@@ -1,71 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { LayoutDashboard, Globe } from 'lucide-react';
 import WordPressSiteCard, { WordPressSite } from './WordPressSiteCard';
 
-export default function DashboardContent() {
-    const [sites, setSites] = useState<WordPressSite[]>([]);
+interface DashboardContentProps {
+    sites: WordPressSite[];
+    onAddSite: (siteData: Omit<WordPressSite, 'id'>) => void;
+    onRemoveSite: (id: string) => void;
+}
 
-    useEffect(() => {
-        // Load from localStorage
-        const savedSites = localStorage.getItem('wordpress_sites');
-        let loadedSites: WordPressSite[] = [];
-        if (savedSites) {
-            try {
-                loadedSites = JSON.parse(savedSites);
-            } catch (e) {
-                console.error("Failed to parse sites", e);
-            }
-        }
-
-        // Migration for old single-site storage
-        const oldUrl = localStorage.getItem('wp_url');
-        const oldUser = localStorage.getItem('wp_username');
-        const oldPass = localStorage.getItem('wp_app_password');
-
-        if (oldUrl && oldUser && oldPass) {
-            // Check if already in array
-            const exists = loadedSites.find(s => s.site_url === oldUrl && s.username === oldUser);
-            if (!exists) {
-                const newSite: WordPressSite = {
-                    id: Date.now().toString(),
-                    site_name: new URL(oldUrl).hostname,
-                    site_url: oldUrl,
-                    username: oldUser,
-                    app_password: oldPass
-                };
-                loadedSites.push(newSite);
-                // We don't delete old keys to stay safe? Or we should?
-                // Let's keep them for now, but prioritize the array.
-            }
-        }
-
-        setSites(loadedSites);
-    }, []);
-
-    const saveSites = (newSites: WordPressSite[]) => {
-        setSites(newSites);
-        localStorage.setItem('wordpress_sites', JSON.stringify(newSites));
-
-        // Also sync the first site to the old keys for backward compatibility/simplicity
-        if (newSites.length > 0) {
-            localStorage.setItem('wp_url', newSites[0].site_url);
-            localStorage.setItem('wp_username', newSites[0].username || '');
-            localStorage.setItem('wp_app_password', newSites[0].app_password || '');
-        }
-    };
-
-    const handleAddSite = (siteData: Omit<WordPressSite, 'id'>) => {
-        const newSite: WordPressSite = {
-            ...siteData,
-            id: Date.now().toString()
-        };
-        saveSites([...sites, newSite]);
-    };
-
-    const handleDisconnect = (id: string) => {
-        const newSites = sites.filter(s => s.id !== id);
-        saveSites(newSites);
-    };
+export default function DashboardContent({ sites, onAddSite, onRemoveSite }: DashboardContentProps) {
 
     return (
         <div>
@@ -96,7 +39,7 @@ export default function DashboardContent() {
                     <div key={site.id} className="relative z-10">
                         <WordPressSiteCard
                             site={site}
-                            onDisconnect={handleDisconnect}
+                            onDisconnect={onRemoveSite}
                         />
                     </div>
                 ))}
@@ -105,7 +48,7 @@ export default function DashboardContent() {
                 <div className="relative z-10">
                     <WordPressSiteCard
                         isNew
-                        onAdd={handleAddSite}
+                        onAdd={onAddSite}
                     />
                 </div>
             </div>

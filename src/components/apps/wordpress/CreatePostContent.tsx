@@ -9,9 +9,11 @@ import { WordPressSite } from './WordPressSiteCard';
 
 const WEBHOOK_URL = "https://n8n.smartcontentsolutions.co.uk/webhook/seo-content-publisher";
 
-export default function CreatePostContent() {
-    const [activeTab, setActiveTab] = useState('create'); // Not used here?
-    const [sites, setSites] = useState<WordPressSite[]>([]);
+interface CreatePostContentProps {
+    sites: WordPressSite[];
+}
+
+export default function CreatePostContent({ sites }: CreatePostContentProps) {
     const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
 
     // Form State
@@ -28,18 +30,11 @@ export default function CreatePostContent() {
     const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
-        const saved = localStorage.getItem('wordpress_sites');
-        if (saved) {
-            try {
-                const parsed: WordPressSite[] = JSON.parse(saved);
-                setSites(parsed);
-                // Default select all? Or first?
-                if (parsed.length > 0) {
-                    setSelectedSiteIds([parsed[0].id]);
-                }
-            } catch (e) { }
+        // Select the first site by default if none selected and sites exist
+        if (sites.length > 0 && selectedSiteIds.length === 0) {
+            setSelectedSiteIds([sites[0].id]);
         }
-    }, []);
+    }, [sites]);
 
     const toggleSite = (id: string) => {
         setSelectedSiteIds(prev =>

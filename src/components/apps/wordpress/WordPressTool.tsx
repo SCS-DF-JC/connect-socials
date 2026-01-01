@@ -1,13 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './Navbar';
 import CreatePostContent from './CreatePostContent';
 import DashboardContent from './DashboardContent';
 import AnimatedBackground from './AnimatedBackground';
+import { WordPressSite } from './WordPressSiteCard';
 
 export default function WordPressTool() {
     const [activeTab, setActiveTab] = useState('create');
-    // 'create' or 'dashboard'
+    const [sites, setSites] = useState<WordPressSite[]>([]);
+
+    useEffect(() => {
+        // Load from localStorage
+        const savedSites = localStorage.getItem('wordpress_sites');
+        let loadedSites: WordPressSite[] = [];
+        let hasMigration = false;
+
+        if (savedSites) {
+            try {
+                loadedSites = JSON.parse(savedSites);
+            } catch (e) {
+                console.error("Failed to parse sites", e);
+            }
+        }
+
+        // Migration for old single-site storage
+        const oldUrl = localStorage.getItem('wp_url');
+        const oldUser = localStorage.getItem('wp_username');
+        const oldPass = localStorage.getItem('wp_app_password');
+
+        if (oldUrl && oldUser && oldPass) {
+            // Check if already in array
+            const exists = loadedSites.find(s => s.site_url === oldUrl && s.username === oldUser);
+            if (!exists) {
+                const newSite: WordPressSite = {
+                    id: Date.now().toString(),
+                    site_name: new URL(oldUrl).hostname,
+                    site_url: oldUrl,
+                    username: oldUser,
+                    app_password: oldPass
+                };
+                loadedSites.push(newSite);
+                hasMigration = true;
+            }
+        }
+
+        setSites(loadedSites);
+
+        // If we migrated data, save it back to LS immediately so it persists properly
+        if (hasMigration) {
+            localStorage.setItem('wordpress_sites', JSON.stringify(loadedSites));
+        }
+    }, []);
+
+    const saveSites = (newSites: WordPressSite[]) => {
+        setSites(newSites);
+        localStorage.setItem('wordpress_sites', JSON.stringify(newSites));
+
+        // Also sync the first site to the old keys for backward compatibility
+        if (newSites.length > 0) {
+            localStorage.setItem('wp_url', newSites[0].site_url);
+            localStorage.setItem('wp_username', newSites[0].username || '');
+            localStorage.setItem('wp_app_password', newSites[0].app_password || '');
+        } else {
+            localStorage.removeItem('wp_url');
+            localStorage.removeItem('wp_username');
+            localStorage.removeItem('wp_app_password');
+        }
+    };
+
+    const handleAddSite = (siteData: Omit<WordPressSite, 'id'>) => {
+        const newSite: WordPressSite = {
+            ...siteData,
+            id: Date.now().toString()
+        };
+        saveSites([...sites, newSite]);
+    };
+
+    const handleDisconnect = (id: string) => {
+        const newSites = sites.filter(s => s.id !== id);
+        saveSites(newSites);
+    };
 
     return (
         <div className="min-h-screen bg-[#1A1A1C] overflow-hidden relative font-sans text-slate-200">
@@ -35,7 +108,7 @@ export default function WordPressTool() {
                                     transition={{ duration: 0.4 }}
                                     className="p-6 md:p-8"
                                 >
-                                    <CreatePostContent />
+                                    <CreatePostContent sites={sites} />
                                 </motion.div>
                             ) : (
                                 <motion.div
@@ -46,7 +119,11 @@ export default function WordPressTool() {
                                     transition={{ duration: 0.4 }}
                                     className="p-6 md:p-8"
                                 >
-                                    <DashboardContent />
+                                    <DashboardContent
+                                        sites={sites}
+                                        onAddSite={handleAddSite}
+                                        onRemoveSite={handleDisconnect}
+                                    />
                                 </motion.div>
                             )}
                         </AnimatePresence>
