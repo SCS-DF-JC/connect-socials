@@ -14,12 +14,12 @@ export default function Navbar({ activeTab, onTabChange, showTabs = true }: Navb
         <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
                 {/* Logo */}
-                <div className="flex items-center gap-3">
+                {/* <div className="flex items-center gap-3">
                     <img src="/icon.png" alt="SCS Logo" className="w-10 h-10 rounded-xl" />
                     <span className="text-xl font-bold bg-gradient-to-r from-[#E1C37A] to-[#D6D7D8] bg-clip-text text-transparent">
                         SmartContentSolutions
                     </span>
-                </div>
+                </div> */}
 
                 {/* Center Tabs */}
                 {showTabs && (
