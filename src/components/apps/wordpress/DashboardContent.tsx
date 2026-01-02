@@ -6,6 +6,7 @@ import PerformanceChart from './components/PerformanceChart';
 import RecentPosts from './components/RecentPosts';
 import { SiteStats, fetchSiteStats } from './utils/wpApi';
 import GoldButton from './GoldButton';
+import { toast } from "sonner";
 
 interface DashboardContentProps {
     sites: WordPressSite[];
@@ -69,6 +70,7 @@ export default function DashboardContent({ sites, onAddSite, onRemoveSite }: Das
             setStats(aggStats);
         } catch (e) {
             console.error("Failed to fetch stats", e);
+            toast.error("Failed to refresh stats. Please check site connection.");
         } finally {
             setIsLoading(false);
         }

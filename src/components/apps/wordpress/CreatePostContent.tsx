@@ -6,6 +6,7 @@ import GoldButton from './GoldButton';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { WordPressSite } from './WordPressSiteCard';
+import { toast } from "sonner";
 
 const WEBHOOK_URL = "https://n8n.smartcontentsolutions.co.uk/webhook/seo-content-publisher";
 
@@ -50,6 +51,7 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
 
         const selectedSites = sites.filter(s => selectedSiteIds.includes(s.id));
         let successCount = 0;
+        let failureCount = 0;
 
         for (const site of selectedSites) {
             const form = new FormData();
@@ -66,20 +68,33 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
             if (image) form.append("image", image);
 
             try {
-                await fetch(WEBHOOK_URL, { method: "POST", body: form });
-                successCount++;
+                const response = await fetch(WEBHOOK_URL, { method: "POST", body: form });
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    console.error("Failed to post to", site.site_name, response.statusText);
+                    failureCount++;
+                }
             } catch (e) {
                 console.error("Failed to post to", site.site_name, e);
+                failureCount++;
             }
         }
 
         setLoading(false);
         if (successCount > 0) {
+            if (failureCount === 0) {
+                toast.success("Content published successfully to all selected sites!");
+            } else {
+                toast.warning(`Published to ${successCount} site(s), but failed for ${failureCount} site(s).`);
+            }
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 3000);
             // Optional: clear form
             setTopic("");
             setImage(null);
+        } else {
+            toast.error("Failed to publish content. Please check site credentials and try again.");
         }
     };
 

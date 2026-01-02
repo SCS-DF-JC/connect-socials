@@ -5,6 +5,7 @@ import CreatePostContent from './CreatePostContent';
 import DashboardContent from './DashboardContent';
 import AnimatedBackground from './AnimatedBackground';
 import { WordPressSite } from './WordPressSiteCard';
+import { toast } from "sonner";
 
 export default function WordPressTool() {
     const [activeTab, setActiveTab] = useState('create');
@@ -75,11 +76,13 @@ export default function WordPressTool() {
             id: Date.now().toString()
         };
         saveSites([...sites, newSite]);
+        toast.success("WordPress site connected successfully!");
     };
 
     const handleDisconnect = (id: string) => {
         const newSites = sites.filter(s => s.id !== id);
         saveSites(newSites);
+        toast.success("WordPress site disconnected.");
     };
 
     return (
