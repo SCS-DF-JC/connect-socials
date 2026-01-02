@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navbar from './Navbar';
+import { FileText, LayoutDashboard, Send } from 'lucide-react';
 import CreatePostContent from './CreatePostContent';
 import DashboardContent from './DashboardContent';
 import AnimatedBackground from './AnimatedBackground';
@@ -8,7 +8,7 @@ import { WordPressSite } from './WordPressSiteCard';
 import { toast } from "sonner";
 
 export default function WordPressTool() {
-    const [activeTab, setActiveTab] = useState('create');
+    const [activeTab, setActiveTab] = useState<'create' | 'dashboard'>('create');
     const [sites, setSites] = useState<WordPressSite[]>([]);
 
     useEffect(() => {
@@ -86,53 +86,85 @@ export default function WordPressTool() {
     };
 
     return (
-        <div className="min-h-screen bg-[#1A1A1C] overflow-hidden relative font-sans text-slate-200">
-            {/* Animated Background */}
-            <AnimatedBackground />
+        <div className="min-h-screen pt-24 pb-20 bg-[#1A1A1C] text-[#D6D7D8]">
+            {/* Ambient glow effects */}
+            <div className="fixed top-1/4 -left-32 w-[500px] h-[500px] bg-[#E1C37A]/10 rounded-full blur-[150px] pointer-events-none" />
+            <div className="fixed bottom-1/4 -right-32 w-[400px] h-[400px] bg-[#B6934C]/10 rounded-full blur-[150px] pointer-events-none" />
 
-            <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
-
-            {/* Main Content Container */}
-            <div className="pt-24 pb-12 px-6 relative z-10 h-full">
-                <div className="max-w-7xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="relative rounded-2xl bg-[#3B3C3E]/20 backdrop-blur-[10px] border border-white/5 overflow-hidden min-h-[600px]"
-                    >
-                        <AnimatePresence mode="wait">
-                            {activeTab === 'create' ? (
-                                <motion.div
-                                    key="create"
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.4 }}
-                                    className="p-6 md:p-8"
-                                >
-                                    <CreatePostContent sites={sites} />
-                                </motion.div>
+            <div className="max-w-7xl mx-auto px-6">
+                {/* Header with Title and Tabs */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#E1C37A] to-[#B6934C] flex items-center justify-center">
+                            {activeTab === 'dashboard' ? (
+                                <LayoutDashboard className="w-6 h-6 text-[#1A1A1C]" />
                             ) : (
-                                <motion.div
-                                    key="dashboard"
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 20 }}
-                                    transition={{ duration: 0.4 }}
-                                    className="p-6 md:p-8"
-                                >
-                                    <DashboardContent
-                                        sites={sites}
-                                        onAddSite={handleAddSite}
-                                        onRemoveSite={handleDisconnect}
-                                    />
-                                </motion.div>
+                                <Send className="w-6 h-6 text-[#1A1A1C]" />
                             )}
-                        </AnimatePresence>
-                    </motion.div>
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-[#D6D7D8]">WordPress Automation</h1>
+                            <p className="text-[#A9AAAC] text-sm">
+                                {activeTab === 'dashboard' ? 'Manage your WordPress sites' : 'Create and publish SEO content'}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Tab Switcher */}
+                    <div className="flex items-center gap-1 bg-[#3B3C3E]/40 backdrop-blur-[20px] rounded-xl p-1 border border-white/5">
+                        <button
+                            onClick={() => setActiveTab('dashboard')}
+                            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 ${activeTab === 'dashboard'
+                                    ? 'bg-[#E1C37A]/20 text-[#E1C37A]'
+                                    : 'text-[#A9AAAC] hover:text-[#D6D7D8]'
+                                }`}
+                        >
+                            <LayoutDashboard className="w-4 h-4" />
+                            Dashboard
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('create')}
+                            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 ${activeTab === 'create'
+                                    ? 'bg-[#E1C37A]/20 text-[#E1C37A]'
+                                    : 'text-[#A9AAAC] hover:text-[#D6D7D8]'
+                                }`}
+                        >
+                            <FileText className="w-4 h-4" />
+                            Create Post
+                        </button>
+                    </div>
                 </div>
+
+                {/* Content Area */}
+                <AnimatePresence mode="wait">
+                    {activeTab === 'create' ? (
+                        <motion.div
+                            key="create"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <CreatePostContent sites={sites} />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="dashboard"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <DashboardContent
+                                sites={sites}
+                                onAddSite={handleAddSite}
+                                onRemoveSite={handleDisconnect}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
 }
+
