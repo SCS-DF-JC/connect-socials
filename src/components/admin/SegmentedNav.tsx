@@ -3,12 +3,12 @@ import { LayoutDashboard, Users, Settings, CreditCard, LucideIcon } from 'lucide
 import { cn } from '@/lib/utils';
 
 interface SegmentedNavProps {
-  activeSection: 'dashboard' | 'leads' | 'subscribers' | 'settings';
-  onSectionChange: (section: 'dashboard' | 'leads' | 'subscribers' | 'settings') => void;
+  activeSection: 'dashboard' | 'leads' | 'subscribers' | 'users' | 'settings';
+  onSectionChange: (section: 'dashboard' | 'leads' | 'subscribers' | 'users' | 'settings') => void;
 }
 
 interface NavItem {
-  id: 'dashboard' | 'leads' | 'subscribers' | 'settings';
+  id: 'dashboard' | 'leads' | 'subscribers' | 'users' | 'settings';
   label: string;
   icon: LucideIcon;
 }
@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'leads', label: 'Leads', icon: Users },
   { id: 'subscribers', label: 'Subscribers', icon: CreditCard },
+  { id: 'users', label: 'Users', icon: Users },
   { id: 'settings', label: 'Staff & Settings', icon: Settings },
 ];
 
