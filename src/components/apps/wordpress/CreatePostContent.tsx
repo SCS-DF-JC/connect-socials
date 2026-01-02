@@ -25,6 +25,7 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
     const [occupation, setOccupation] = useState("");
     const [audience, setAudience] = useState("");
     const [tone, setTone] = useState("Professional");
+    const [customTone, setCustomTone] = useState("");
     const [image, setImage] = useState<File | null>(null);
 
     const [loading, setLoading] = useState(false);
@@ -73,7 +74,7 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
             form.append("location", location);
             form.append("occupation", occupation);
             form.append("audience", audience);
-            form.append("tone", tone);
+            form.append("tone", tone === 'Custom' ? customTone : tone);
             form.append("wp_url", site.site_url);
             form.append("wp_username", site.username || '');
             if (site.app_password) form.append("wp_app_password", site.app_password);
@@ -249,6 +250,24 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
                                     <option>Humorous</option>
                                     <option>Custom</option>
                                 </select>
+
+                                <AnimatePresence>
+                                    {tone === 'Custom' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <Input
+                                                placeholder="Describe your custom tone (e.g., Witty and conversational)"
+                                                className="bg-[#1A1A1C] border-[#333] text-white mt-2"
+                                                value={customTone}
+                                                onChange={(e) => setCustomTone(e.target.value)}
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                             <div className="flex flex-col space-y-2">
                                 <label className="text-sm text-gray-400">Number of Sections: {sections}</label>
