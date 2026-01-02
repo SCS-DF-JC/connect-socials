@@ -148,10 +148,10 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#E1C37A] to-[#B6934C] flex items-center justify-center">
                     <FileText className="w-6 h-6 text-[#1A1A1C]" />
                 </div>
-                <div>
+                {/* <div>
                     <h2 className="text-2xl font-bold text-[#D6D7D8]">Create Post</h2>
                     <p className="text-[#A9AAAC] text-sm">Publish SEO-optimized content to WordPress</p>
-                </div>
+                </div> */}
             </div>
 
             {showSuccess && (
