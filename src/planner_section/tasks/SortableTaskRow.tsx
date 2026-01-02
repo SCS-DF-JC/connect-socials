@@ -150,6 +150,34 @@ export function SortableTaskRow({
       </TableCell>
 
       <TableCell onClick={(e) => e.stopPropagation()}>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "h-8 w-full justify-start text-left font-normal bg-surface border-border/50 text-xs",
+                task.status !== "Done" && "opacity-50 cursor-not-allowed"
+              )}
+              disabled={task.status !== "Done"}
+            >
+              <CalendarIcon className="mr-2 h-3 w-3" />
+              {task.completedDate ? format(new Date(task.completedDate), "MMM d, yyyy") : "Not set"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={task.completedDate ? new Date(task.completedDate) : undefined}
+              onSelect={(date) => onUpdateTask(task.id, { completedDate: date })}
+              initialFocus
+              className="pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+      </TableCell>
+
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <TaskAttachments taskId={task.id} compact />
       </TableCell>
 

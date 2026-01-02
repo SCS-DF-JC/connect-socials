@@ -82,6 +82,7 @@ export function TasksTableView({ tasks, onUpdateTask, onSelectTask, onDeleteTask
               <TableHead className="text-foreground font-medium w-[140px]">Priority</TableHead>
               <TableHead className="text-foreground font-medium w-[130px]">Assignee</TableHead>
               <TableHead className="text-foreground font-medium w-[140px]">Due Date</TableHead>
+              <TableHead className="text-foreground font-medium w-[140px]">Completed Date</TableHead>
               <TableHead className="text-foreground font-medium w-[60px]">Files</TableHead>
               <TableHead className="text-foreground font-medium w-[120px]">Updated</TableHead>
               {onDeleteTask && <TableHead className="text-foreground font-medium w-[60px]"></TableHead>}
@@ -90,7 +91,7 @@ export function TasksTableView({ tasks, onUpdateTask, onSelectTask, onDeleteTask
           <TableBody>
             {tasks.length === 0 ? (
               <TableRow>
-                <td colSpan={onDeleteTask ? 9 : 8} className="text-center py-8 text-muted-foreground">
+                <td colSpan={onDeleteTask ? 10 : 9} className="text-center py-8 text-muted-foreground">
                   No tasks found
                 </td>
               </TableRow>
