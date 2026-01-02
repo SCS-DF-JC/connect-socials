@@ -1,10 +1,13 @@
 import Stripe from "stripe";
 import { clerkClient } from "@clerk/backend";
 
-/**
- * Stripe requires the *raw request body* for signature verification.
- * We read the Node.js request stream into a Buffer.
- */
+// IMPORTANT: Stripe webhook signature verification needs the RAW body
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 async function readRawBody(req: any): Promise<Buffer> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
@@ -13,26 +16,21 @@ async function readRawBody(req: any): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-function safeRoleUpdate(targetRole: string, currentRole: string | undefined) {
-  // Never downgrade an admin via webhook.
-  if (currentRole === "admin") return null;
-  return targetRole;
+function neverDowngradeAdmin(currentRole?: string) {
+  return currentRole === "admin";
 }
 
 export default async function handler(req: any, res: any) {
+  // Browser visits are GET — webhook must be POST
   if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed");
+    return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (!stripeSecretKey) {
-    return res.status(500).json({ error: "Missing STRIPE_SECRET_KEY" });
-  }
-  if (!webhookSecret) {
-    return res.status(500).json({ error: "Missing STRIPE_WEBHOOK_SECRET" });
-  }
+  if (!stripeSecretKey) return res.status(500).json({ error: "Missing STRIPE_SECRET_KEY" });
+  if (!webhookSecret) return res.status(500).json({ error: "Missing STRIPE_WEBHOOK_SECRET" });
 
   const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 
@@ -48,120 +46,90 @@ export default async function handler(req: any, res: any) {
 
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err: any) {
-    console.error("Stripe webhook signature verification failed:", err?.message || err);
+    console.error("Webhook signature verification failed:", err?.message || err);
     return res.status(400).send(`Webhook Error: ${err?.message || "Invalid signature"}`);
   }
 
   try {
-    switch (event.type) {
-      /**
-       * Fires when checkout completes successfully.
-       * We stored clerkUserId in:
-       * - session.metadata.clerkUserId
-       * - session.client_reference_id (also set to clerkUserId)
-       */
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
 
-        const clerkUserId =
-          (session.metadata?.clerkUserId as string | undefined) ||
-          (session.client_reference_id as string | undefined);
+      const clerkUserId =
+        (session.metadata?.clerkUserId as string | undefined) ||
+        (session.client_reference_id as string | undefined);
 
-        if (!clerkUserId) {
-          console.warn("checkout.session.completed: missing clerkUserId");
-          break;
-        }
+      if (!clerkUserId) {
+        console.warn("checkout.session.completed: missing clerkUserId");
+        return res.status(200).json({ received: true });
+      }
 
-        const user = await clerkClient.users.getUser(clerkUserId);
-        const currentRole = (user.publicMetadata as any)?.role as string | undefined;
+      const user = await clerkClient.users.getUser(clerkUserId);
+      const currentRole = (user.publicMetadata as any)?.role as string | undefined;
 
-        const nextRole = safeRoleUpdate("early_access", currentRole);
-        if (!nextRole) break;
-
+      if (!neverDowngradeAdmin(currentRole)) {
         await clerkClient.users.updateUser(clerkUserId, {
           publicMetadata: {
             ...(user.publicMetadata || {}),
-            role: nextRole,
+            role: "early_access",
           },
         });
-
         console.log(`Granted early_access to ${clerkUserId}`);
-        break;
       }
 
-      /**
-       * Fires when a subscription is deleted/cancelled.
-       * We stored clerkUserId in subscription_data.metadata.clerkUserId during Checkout creation,
-       * so it should appear here as subscription.metadata.clerkUserId.
-       */
-      case "customer.subscription.deleted": {
-        const sub = event.data.object as Stripe.Subscription;
-
-        const clerkUserId = (sub.metadata?.clerkUserId as string | undefined) || undefined;
-
-        if (!clerkUserId) {
-          console.warn("customer.subscription.deleted: missing clerkUserId in subscription metadata");
-          break;
-        }
-
-        const user = await clerkClient.users.getUser(clerkUserId);
-        const currentRole = (user.publicMetadata as any)?.role as string | undefined;
-
-        const nextRole = safeRoleUpdate("user", currentRole);
-        if (!nextRole) break;
-
-        await clerkClient.users.updateUser(clerkUserId, {
-          publicMetadata: {
-            ...(user.publicMetadata || {}),
-            role: nextRole,
-          },
-        });
-
-        console.log(`Revoked early_access (set to user) for ${clerkUserId}`);
-        break;
-      }
-
-      /**
-       * Optional (recommended): keeps roles correct if subscription status changes
-       * (past_due, unpaid, canceled, etc.)
-       */
-      case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
-        const clerkUserId = (sub.metadata?.clerkUserId as string | undefined) || undefined;
-
-        if (!clerkUserId) break;
-
-        const status = sub.status; // active, trialing, canceled, past_due, unpaid, etc.
-
-        const user = await clerkClient.users.getUser(clerkUserId);
-        const currentRole = (user.publicMetadata as any)?.role as string | undefined;
-
-        const shouldHaveAccess = status === "active" || status === "trialing";
-        const desiredRole = shouldHaveAccess ? "early_access" : "user";
-
-        const nextRole = safeRoleUpdate(desiredRole, currentRole);
-        if (!nextRole) break;
-
-        // Only write if it actually changes (keeps logs clean)
-        if (currentRole !== nextRole) {
-          await clerkClient.users.updateUser(clerkUserId, {
-            publicMetadata: {
-              ...(user.publicMetadata || {}),
-              role: nextRole,
-            },
-          });
-          console.log(`Role sync for ${clerkUserId}: ${currentRole} -> ${nextRole} (status=${status})`);
-        }
-
-        break;
-      }
-
-      default:
-        // Ignore anything else
-        break;
+      return res.status(200).json({ received: true });
     }
 
-    // Stripe expects a 2xx quickly.
+    if (event.type === "customer.subscription.deleted") {
+      const sub = event.data.object as Stripe.Subscription;
+      const clerkUserId = (sub.metadata?.clerkUserId as string | undefined) || undefined;
+
+      if (!clerkUserId) {
+        console.warn("customer.subscription.deleted: missing clerkUserId");
+        return res.status(200).json({ received: true });
+      }
+
+      const user = await clerkClient.users.getUser(clerkUserId);
+      const currentRole = (user.publicMetadata as any)?.role as string | undefined;
+
+      if (!neverDowngradeAdmin(currentRole)) {
+        await clerkClient.users.updateUser(clerkUserId, {
+          publicMetadata: {
+            ...(user.publicMetadata || {}),
+            role: "user",
+          },
+        });
+        console.log(`Revoked early_access for ${clerkUserId}`);
+      }
+
+      return res.status(200).json({ received: true });
+    }
+
+    if (event.type === "customer.subscription.updated") {
+      const sub = event.data.object as Stripe.Subscription;
+      const clerkUserId = (sub.metadata?.clerkUserId as string | undefined) || undefined;
+      if (!clerkUserId) return res.status(200).json({ received: true });
+
+      const status = sub.status; // active, trialing, past_due, unpaid, canceled, etc.
+      const shouldHaveAccess = status === "active" || status === "trialing";
+      const desiredRole = shouldHaveAccess ? "early_access" : "user";
+
+      const user = await clerkClient.users.getUser(clerkUserId);
+      const currentRole = (user.publicMetadata as any)?.role as string | undefined;
+
+      if (!neverDowngradeAdmin(currentRole) && currentRole !== desiredRole) {
+        await clerkClient.users.updateUser(clerkUserId, {
+          publicMetadata: {
+            ...(user.publicMetadata || {}),
+            role: desiredRole,
+          },
+        });
+        console.log(`Role sync ${clerkUserId}: ${currentRole} -> ${desiredRole} (status=${status})`);
+      }
+
+      return res.status(200).json({ received: true });
+    }
+
+    // Ignore all other events
     return res.status(200).json({ received: true });
   } catch (err: any) {
     console.error("Webhook handler error:", err?.message || err);
