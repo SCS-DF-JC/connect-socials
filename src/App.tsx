@@ -352,7 +352,9 @@ const App = () => (
               path="/apps/wordpress-seo"
               element={
                 <ProtectedRoute>
-                  <WordpressAutomationApp />
+                  <Layout>
+                    <WordpressAutomationApp />
+                  </Layout>
                 </ProtectedRoute>
               }
             />
