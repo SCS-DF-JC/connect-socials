@@ -111,7 +111,7 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
             setLoading(false);
             if (successCount > 0) {
                 if (failureCount === 0) {
-                    toast.success("Automation started! Your posts are being generated in the background.");
+                    toast.success("Automation started! Your posts are being generated in the background. Please check your drafts in a few minutes.");
                 } else {
                     toast.warning(`Started generation for ${successCount} site(s), but failed for ${failureCount} site(s).`);
                 }
