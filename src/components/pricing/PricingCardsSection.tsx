@@ -10,6 +10,7 @@ import {
   Loader2,
   Lock,
 } from "lucide-react";
+import { useAuth } from "@clerk/clerk-react";
 
 export default function PricingCardsSection({
   plans,
@@ -17,6 +18,8 @@ export default function PricingCardsSection({
   loadingPlan,
   onSubscribe,
 }) {
+  const { getToken } = useAuth();
+
   const [highlightStyle, setHighlightStyle] = useState({ opacity: 0 });
   const [activeIndex, setActiveIndex] = useState(1);
   const gridRef = useRef(null);
@@ -56,18 +59,28 @@ export default function PricingCardsSection({
     };
   }, [activeIndex]);
 
-  // --- ADDED: Stripe Checkout handler for Early Access plan ---
+  // --- Stripe Checkout handler for Early Access plan ---
   const handleStartTrial = async () => {
     try {
+      console.log("SCS CHECKOUT: handleStartTrial fired"); // ✅ DEBUG FINGERPRINT
+
       // Keep existing behaviour if parent uses onSubscribe
       if (onSubscribe) {
         onSubscribe("Early Access");
+      }
+
+      const token = await getToken();
+      if (!token) {
+        alert("Please log in first, then try again.");
+        return;
       }
 
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-SCS-Checkout": "PricingCardsSection-handleStartTrial", // ✅ DEBUG FINGERPRINT
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -85,7 +98,7 @@ export default function PricingCardsSection({
       alert("Something went wrong starting the checkout. Please try again.");
     }
   };
-  // --- END ADDED ---
+  // --- END ---
 
   return (
     <section className="py-12 relative overflow-hidden">
@@ -160,9 +173,7 @@ export default function PricingCardsSection({
                       <span className="text-[#5B5C60] ml-1">/month</span>
                     </>
                   ) : (
-                    <span className="text-3xl font-bold text-white">
-                      Custom
-                    </span>
+                    <span className="text-3xl font-bold text-white">Custom</span>
                   )}
                 </div>
 
@@ -172,9 +183,7 @@ export default function PricingCardsSection({
                       <div className="w-5 h-5 rounded-full bg-[#2A2A2C] flex items-center justify-center mt-0.5">
                         <Check className="w-3 h-3 text-[#E1C37A]" />
                       </div>
-                      <span className="text-sm text-[#D6D7D8]">
-                        {feature}
-                      </span>
+                      <span className="text-sm text-[#D6D7D8]">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -197,9 +206,9 @@ export default function PricingCardsSection({
             Early Access Plan
           </h2>
           <p className="text-sm md:text-base text-[#A9AAAC] mb-6">
-            Get started with the SCS WordPress Automation Engine while we
-            finish the full automation suite. Enjoy a 3-day free trial, then
-            £20/month. Cancel anytime.
+            Get started with the SCS WordPress Automation Engine while we finish
+            the full automation suite. Enjoy a 3-day free trial, then £20/month.
+            Cancel anytime.
           </p>
 
           <div className="flex flex-col items-center gap-4">
@@ -217,7 +226,7 @@ export default function PricingCardsSection({
             </ul>
 
             <button
-              onClick={handleStartTrial} // UPDATED: now uses Stripe handler
+              onClick={handleStartTrial}
               className="mt-4 w-full sm:w-auto px-8 h-12 rounded-xl btn-gold flex items-center justify-center gap-2"
             >
               Start 3-Day Free Trial
