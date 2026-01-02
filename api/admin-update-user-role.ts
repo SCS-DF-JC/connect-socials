@@ -1,5 +1,4 @@
-import { clerkClient } from "@clerk/clerk-sdk-node";
-import { verifyToken } from "@clerk/backend";
+import { clerkClient, verifyToken } from "@clerk/backend";
 
 function getBearerToken(req: any): string | null {
   const header = req.headers?.authorization || req.headers?.Authorization;
@@ -8,26 +7,50 @@ function getBearerToken(req: any): string | null {
   return match ? match[1] : null;
 }
 
+function getClerkSessionCookie(req: any): string | null {
+  const cookieHeader = req.headers?.cookie;
+  if (!cookieHeader || typeof cookieHeader !== "string") return null;
+
+  const match = cookieHeader.match(/(?:^|;\s*)__session=([^;]+)/);
+  if (!match) return null;
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
+
 async function requireAdmin(req: any) {
   const secretKey = process.env.CLERK_SECRET_KEY;
   if (!secretKey) throw new Error("Missing CLERK_SECRET_KEY");
 
-  const token = getBearerToken(req);
-  if (!token) return { ok: false as const, status: 401, error: "Missing Authorization token" };
+  const token = getBearerToken(req) || getClerkSessionCookie(req);
+  if (!token) {
+    return {
+      ok: false as const,
+      status: 401,
+      error: "Missing Authorization token",
+      debug: {
+        hasAuthHeader: Boolean(req.headers?.authorization || req.headers?.Authorization),
+        hasCookieHeader: Boolean(req.headers?.cookie),
+      },
+    };
+  }
 
   const verified = await verifyToken(token, { secretKey });
 
-  const userId = (verified?.sub as string) || null;
-  if (!userId) return { ok: false as const, status: 401, error: "Invalid token" };
+  const adminUserId = (verified?.sub as string) || null;
+  if (!adminUserId) return { ok: false as const, status: 401, error: "Invalid token" };
 
-  const user = await clerkClient.users.getUser(userId);
-  const role = (user.publicMetadata as any)?.role;
+  const adminUser = await clerkClient.users.getUser(adminUserId);
+  const role = (adminUser.publicMetadata as any)?.role;
 
   if (role !== "admin") {
     return { ok: false as const, status: 403, error: "Admins only" };
   }
 
-  return { ok: true as const, userId };
+  return { ok: true as const, adminUserId };
 }
 
 export default async function handler(req: any, res: any) {
@@ -37,7 +60,7 @@ export default async function handler(req: any, res: any) {
 
   try {
     const auth = await requireAdmin(req);
-    if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
+    if (!auth.ok) return res.status(auth.status).json({ error: auth.error, debug: (auth as any).debug });
 
     const { userId, role } = req.body || {};
     const allowedRoles = ["admin", "early_access", "user"];
@@ -45,6 +68,7 @@ export default async function handler(req: any, res: any) {
     if (!userId || typeof userId !== "string") {
       return res.status(400).json({ error: "Missing or invalid userId" });
     }
+
     if (!role || typeof role !== "string" || !allowedRoles.includes(role)) {
       return res.status(400).json({ error: "Invalid role" });
     }

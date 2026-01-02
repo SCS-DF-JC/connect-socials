@@ -8,11 +8,27 @@ function getBearerToken(req: any): string | null {
   return match ? match[1] : null;
 }
 
+// Clerk session cookie fallback (common in some deployments)
+function getClerkSessionCookie(req: any): string | null {
+  const cookieHeader = req.headers?.cookie;
+  if (!cookieHeader || typeof cookieHeader !== "string") return null;
+
+  // Typical Clerk cookie name
+  const match = cookieHeader.match(/(?:^|;\s*)__session=([^;]+)/);
+  if (!match) return null;
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return match[1];
+  }
+}
+
 function getOrigin(req: any): string {
   return (
     req.headers?.origin ||
     req.headers?.Origin ||
-    `https://${req.headers?.host}` ||
+    (req.headers?.host ? `https://${req.headers.host}` : "") ||
     ""
   );
 }
@@ -37,38 +53,36 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ error: "Missing CLERK_SECRET_KEY" });
     }
 
-    // Require signed-in user token
-    const token = getBearerToken(req);
+    // Accept either Bearer token or Clerk __session cookie
+    const token = getBearerToken(req) || getClerkSessionCookie(req);
+
     if (!token) {
-      return res.status(401).json({ error: "Missing Authorization token" });
+      return res.status(401).json({
+        error: "Missing Authorization token",
+        debug: {
+          hasAuthHeader: Boolean(req.headers?.authorization || req.headers?.Authorization),
+          hasCookieHeader: Boolean(req.headers?.cookie),
+        },
+      });
     }
 
     const verified = await verifyToken(token, { secretKey: clerkSecretKey });
     const clerkUserId = (verified?.sub as string) || null;
+
     if (!clerkUserId) {
       return res.status(401).json({ error: "Invalid token" });
     }
 
-    console.log(
-      "Creating checkout session for Clerk user:",
-      clerkUserId,
-      "price:",
-      priceId
-    );
+    console.log("Creating checkout session for Clerk user:", clerkUserId, "price:", priceId);
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
-
     const origin = getOrigin(req);
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-
-      // Helpful for linking in Stripe dashboard and logs
       client_reference_id: clerkUserId,
-
       line_items: [{ price: priceId, quantity: 1 }],
 
-      // Store metadata on the subscription (used in subscription webhooks)
       subscription_data: {
         trial_period_days: 3,
         metadata: {
@@ -77,7 +91,6 @@ export default async function handler(req: any, res: any) {
         },
       },
 
-      // Also store metadata on the Checkout Session (used in checkout.session.* events)
       metadata: {
         clerkUserId,
         plan: "early_access",
