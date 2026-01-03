@@ -36,7 +36,13 @@ function ToolCard({
 
   // ✅ CLERK-SAFE ADMIN CHECK
   const isAdmin = user?.publicMetadata?.role === "admin";
-  const hasAccess = isAdmin || hasAccessToTool(tool.planRequired);
+  const isEarlyAccess = user?.publicMetadata?.role === "early_access";
+
+  // ✅ Special case: early_access users can ONLY access WordPress tool
+  const isWordPressTool = tool.id === "wordpress-seo" || tool.slug === "wordpress-seo";
+  const hasEarlyAccessToThisTool = isEarlyAccess && isWordPressTool;
+
+  const hasAccess = isAdmin || hasEarlyAccessToThisTool || hasAccessToTool(tool.planRequired);
 
   const Icon = tool.icon;
 
@@ -47,6 +53,7 @@ function ToolCard({
     : null;
 
   const cardProps = targetUrl ? { to: targetUrl } : {};
+
 
   const handleClick = () => {
     // ✅ LOCKED USERS NEVER NAVIGATE
