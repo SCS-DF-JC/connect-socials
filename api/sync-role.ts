@@ -3,9 +3,7 @@ import { clerkClient } from "@clerk/backend";
 
 /**
  * API Endpoint to manually sync role after successful payment.
- * This is crucial for:
- * 1. Localhost development where webhooks can't reach
- * 2. Instant access provisioning without waiting for webhook delays
+ * This includes enhanced logging to diagnose localhost issues.
  */
 
 async function readJsonBody(req: any): Promise<any> {
@@ -40,38 +38,48 @@ export default async function handler(req: any, res: any) {
         const body = await readJsonBody(req);
         const { sessionId, userId } = body;
 
+        console.log(`[Sync] Request received for Session: ${sessionId}, User: ${userId}`);
+
         if (!sessionId || !userId) {
             return res.status(400).json({ error: "Missing sessionId or userId" });
         }
 
-        // Initialize Stripe
         const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
         if (!stripeSecretKey) {
+            console.error("[Sync] Stripe not configured");
             return res.status(500).json({ error: "Stripe not configured" });
         }
 
         const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 
-        // Retrieve the session from Stripe to verify payment
+        // Retrieve the session
         const session = await stripe.checkout.sessions.retrieve(sessionId);
+        console.log(`[Sync] Stripe Session Status: payment_status=${session.payment_status}, mode=${session.mode}`);
 
-        // Verify the customer actually paid
-        if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") {
-            // no_payment_required is for trials
-            return res.status(400).json({ error: "Payment not completed" });
+        // Verify payment
+        const isValidPayment = session.payment_status === "paid" || session.payment_status === "no_payment_required";
+
+        if (!isValidPayment) {
+            console.warn(`[Sync] Payment incomplete. Status: ${session.payment_status}`);
+            return res.status(400).json({ error: `Payment incomplete: ${session.payment_status}` });
         }
 
-        // Verify the user ID matches the one in metadata (security check)
-        const clerkUserId = session.metadata?.clerkUserId;
-        if (clerkUserId !== userId) {
-            return res.status(403).json({ error: "Session does not belong to this user" });
+        // Verify user ownership
+        // Check metadata first, then client_reference_id
+        const attachedUserId = session.metadata?.clerkUserId || session.client_reference_id;
+        console.log(`[Sync] Attached User ID: ${attachedUserId}`);
+
+        if (attachedUserId !== userId) {
+            console.error(`[Sync] ID Mismatch. Expected ${userId}, got ${attachedUserId}`);
+            return res.status(403).json({ error: "Session does not match logged in user" });
         }
 
-        // If we get here, payment is valid. Grant the role immediately.
+        // Update Clerk
         const user = await clerkClient.users.getUser(userId);
-
-        // Only update if not already admin
         const currentRole = (user.publicMetadata?.role as string);
+
+        console.log(`[Sync] Valid payment verified. Updating user role. Current: ${currentRole}`);
+
         if (currentRole !== "admin") {
             await clerkClient.users.updateUser(userId, {
                 publicMetadata: {
@@ -80,18 +88,19 @@ export default async function handler(req: any, res: any) {
                     stripeCustomerId: session.customer as string,
                     subscriptionId: session.subscription as string,
                     planName: session.metadata?.planName || "Early Access",
-                    subscriptionStatus: "active"
+                    // If it was no_payment_required, it's likely a trial
+                    subscriptionStatus: session.payment_status === "no_payment_required" ? "trialing" : "active"
                 }
             });
-            console.log(`[Sync] Manually granted early_access to ${userId}`);
+            console.log(`[Sync] SUCCESS: User ${userId} upgraded to early_access`);
         } else {
-            console.log(`[Sync] Skipped - User is admin`);
+            console.log(`[Sync] SKIPPED: User is admin`);
         }
 
-        return res.status(200).json({ success: true, role: "early_access" });
+        return res.status(200).json({ success: true });
 
     } catch (err: any) {
-        console.error("Sync error:", err);
-        return res.status(500).json({ error: err.message || "Failed to sync role" });
+        console.error("[Sync] CRITICAL ERROR:", err);
+        return res.status(500).json({ error: err.message || "Internal server error during sync" });
     }
 }
