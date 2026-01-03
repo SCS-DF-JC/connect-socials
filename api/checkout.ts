@@ -1,5 +1,7 @@
 import Stripe from "stripe";
-import { clerkClient } from "@clerk/backend";
+import { createClerkClient } from "@clerk/backend";
+
+const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 /**
  * API endpoint to create Stripe checkout sessions
