@@ -71,6 +71,10 @@ export default async function handler(req: any, res: any) {
           publicMetadata: {
             ...(user.publicMetadata || {}),
             role: "early_access",
+            stripeCustomerId: session.customer as string,
+            subscriptionId: session.subscription as string,
+            planName: session.metadata?.planName || "Early Access",
+            subscriptionStatus: "active",
           },
         });
         console.log(`Granted early_access to ${clerkUserId}`);
@@ -116,11 +120,14 @@ export default async function handler(req: any, res: any) {
       const user = await clerkClient.users.getUser(clerkUserId);
       const currentRole = (user.publicMetadata as any)?.role as string | undefined;
 
-      if (!neverDowngradeAdmin(currentRole) && currentRole !== desiredRole) {
+      if (!neverDowngradeAdmin(currentRole)) {
         await clerkClient.users.updateUser(clerkUserId, {
           publicMetadata: {
             ...(user.publicMetadata || {}),
             role: desiredRole,
+            stripeCustomerId: sub.customer as string,
+            subscriptionId: sub.id,
+            subscriptionStatus: status,
           },
         });
         console.log(`Role sync ${clerkUserId}: ${currentRole} -> ${desiredRole} (status=${status})`);
