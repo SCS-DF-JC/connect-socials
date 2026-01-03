@@ -83,10 +83,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   /* ============================
      ✅ Refresh User (Clerk Metadata)
+     CRITICAL: Must call clerkUser.reload() to get fresh data from server
   ============================ */
 
   const refreshUser = async () => {
     if (!clerkUser) return;
+
+    // CRITICAL: Force Clerk to refetch user data from server
+    // Without this, publicMetadata changes won't be reflected
+    await clerkUser.reload();
 
     const subscriptionUser: UserSubscription = {
       subscription_plan:

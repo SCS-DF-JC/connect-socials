@@ -30,7 +30,7 @@ const SuccessPage: React.FC = () => {
 
     const syncRole = async () => {
       try {
-        console.log("Syncing role for session:", sessionId);
+        console.log("[Success] Syncing role for session:", sessionId);
         const res = await fetch("/api/sync-role", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -46,11 +46,18 @@ const SuccessPage: React.FC = () => {
           throw new Error(data.error || "Failed to confirm payment");
         }
 
-        console.log("Role synced successfully!");
-        await refreshUser(); // Update the global subscription context
+        console.log("[Success] Backend sync complete. Waiting for Clerk propagation...");
+
+        // Small delay to allow Clerk backend to propagate the metadata change
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        console.log("[Success] Refreshing user data from Clerk...");
+        await refreshUser();
+
+        console.log("[Success] All done! Role should now be early_access");
         setStatus("success");
       } catch (err: any) {
-        console.error("Sync failed:", err);
+        console.error("[Success] Sync failed:", err);
         setErrorMessage(err.message);
         setStatus("error");
       }
