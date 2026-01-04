@@ -159,14 +159,22 @@ export default function WordPressSiteCard({ site, onDisconnect, isNew = false, o
                         placeholder="Username"
                         className="bg-[#3B3C3E]/30 border-white/10 text-[#D6D7D8] placeholder:text-[#5B5C60] rounded-lg focus-visible:ring-[#E1C37A]"
                     />
-                    <Input
-                        type="password"
-                        value={appPassword}
-                        onChange={(e) => setAppPassword(e.target.value)}
-                        placeholder="App Password"
-                        className="bg-[#3B3C3E]/30 border-white/10 text-[#D6D7D8] placeholder:text-[#5B5C60] rounded-lg focus-visible:ring-[#E1C37A]"
-                        onFocus={() => setShowGuide(true)}
-                    />
+                    <div className="relative">
+                        <Input
+                            type="password"
+                            value={appPassword}
+                            onChange={(e) => setAppPassword(e.target.value)}
+                            placeholder="App Password"
+                            className="bg-[#3B3C3E]/30 border-white/10 text-[#D6D7D8] placeholder:text-[#5B5C60] rounded-lg focus-visible:ring-[#E1C37A] pr-10"
+                        />
+                        <button
+                            onClick={() => setShowGuide(true)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5B5C60] hover:text-[#E1C37A] transition-colors"
+                            title="View Connection Guide"
+                        >
+                            <Info className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
 
                 <AnimatePresence>
