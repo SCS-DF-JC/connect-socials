@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 import { WordPressSite } from './WordPressSiteCard';
 import { toast } from "sonner";
 
-const WEBHOOK_URL = "https://n8n.smartcontentsolutions.co.uk/webhook/seo-content-publisher";
+// Use backend API proxy to avoid CORS issues with direct n8n calls
+const API_PROXY_URL = "/api/wordpress-automation";
 
 interface CreatePostContentProps {
     sites: WordPressSite[];
@@ -67,40 +68,61 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
         let failureCount = 0;
 
         for (const site of selectedSites) {
-            const form = new FormData();
-            form.append("topic", topic);
-            form.append("sections", String(sections));
-            form.append("keywords", keywords);
-            form.append("location", location);
-            form.append("occupation", occupation);
-            form.append("audience", audience);
-            form.append("tone", tone === 'Custom' ? customTone : tone);
-            form.append("wp_url", site.site_url);
-            form.append("wp_username", site.username || '');
-            if (site.app_password) form.append("wp_app_password", site.app_password);
-            if (image) form.append("image", image);
+            // Convert image to base64 if present
+            let imageData: string | null = null;
+            let imageName: string | null = null;
+            if (image) {
+                const reader = new FileReader();
+                const base64Promise = new Promise<string>((resolve) => {
+                    reader.onload = () => {
+                        const result = reader.result as string;
+                        // Remove the data:image/...;base64, prefix
+                        const base64 = result.split(',')[1];
+                        resolve(base64);
+                    };
+                    reader.readAsDataURL(image);
+                });
+                imageData = await base64Promise;
+                imageName = image.name;
+            }
+
+            const payload = {
+                topic,
+                sections: String(sections),
+                keywords,
+                location,
+                occupation,
+                audience,
+                tone: tone === 'Custom' ? customTone : tone,
+                wp_url: site.site_url,
+                wp_username: site.username || '',
+                wp_app_password: site.app_password || '',
+                ...(imageData && { image: imageData, imageName }),
+            };
 
             try {
-                // Request sent to n8n. 
-                // Note: If n8n takes a long time, this might timeout or throw network error
-                const response = await fetch(WEBHOOK_URL, { method: "POST", body: form });
+                // Request sent through backend API proxy to avoid CORS issues
+                const response = await fetch(API_PROXY_URL, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
 
-                if (response.ok) {
+                const result = await response.json();
+
+                if (response.ok && result.success) {
                     successCount++;
+                    console.log("Successfully triggered automation for", site.site_name);
                 } else {
-                    console.error("Failed to post to", site.site_name, response.statusText);
+                    console.error("Failed to post to", site.site_name, result.error || response.statusText);
                     failureCount++;
                 }
             } catch (e: any) {
-                // Check for typical fetch errors that might indicate strict CORS or Timeout
-                // while the backend actually received the request (as per user feedback)
-                if (e.message === 'Failed to fetch' || e.name === 'TypeError') {
-                    console.warn("Network request reported failure, but backend is likely processing (Fire & Forget mode)", site.site_name);
-                    successCount++;
-                } else {
-                    console.error("Failed to post to", site.site_name, e);
-                    failureCount++;
-                }
+                // Network errors should be reported as failures, not hidden
+                console.error("Failed to post to", site.site_name, e);
+                failureCount++;
             }
         }
 
