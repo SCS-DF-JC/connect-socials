@@ -182,7 +182,7 @@ export default function Account() {
                       <Button
                         onClick={handleManageSubscription}
                         disabled={loadingPortal}
-                        className="bg-white text-black hover:bg-gray-200 border border-gray-300 w-full sm:w-auto"
+                        className="btn-outline w-full sm:w-auto hover:bg-[#3B3C3E] hover:text-white hover:border-[#E1C37A]/50 transition-all border-[#3B3C3E]"
                       >
                         {loadingPortal ? (
                           <>
