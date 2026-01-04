@@ -1,7 +1,11 @@
 import Stripe from "stripe";
 import { createClerkClient } from "@clerk/backend";
+import { Resend } from "resend";
+import { getSubscriptionConfirmationEmail } from "./emails/subscription-confirmation";
+import { getSubscriptionCancellationEmail } from "./emails/subscription-cancellation";
 
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // IMPORTANT: Stripe webhook signature verification needs the RAW body
 export const config = {
@@ -80,6 +84,31 @@ export default async function handler(req: any, res: any) {
           },
         });
         console.log(`Granted early_access to ${clerkUserId}`);
+
+        // Send confirmation email
+        try {
+          const userEmail = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress;
+
+          if (userEmail) {
+            const emailData = getSubscriptionConfirmationEmail({
+              userName: user.firstName || user.username || 'there',
+              planName: session.metadata?.planName || "Early Access Plan",
+              trialDays: session.mode === 'subscription' && session.payment_status === 'no_payment_required' ? 3 : undefined,
+            });
+
+            await resend.emails.send({
+              from: 'Smart Content Solutions <noreply@smartcontentsolutions.co.uk>',
+              to: userEmail,
+              subject: emailData.subject,
+              html: emailData.html,
+            });
+
+            console.log(`Confirmation email sent to ${userEmail}`);
+          }
+        } catch (emailError) {
+          console.error('Failed to send confirmation email:', emailError);
+          // Don't fail the webhook if email fails
+        }
       }
 
       return res.status(200).json({ received: true });
@@ -105,6 +134,30 @@ export default async function handler(req: any, res: any) {
           },
         });
         console.log(`Revoked early_access for ${clerkUserId}`);
+
+        // Send cancellation email
+        try {
+          const userEmail = user.emailAddresses.find((e: any) => e.id === user.primaryEmailAddressId)?.emailAddress;
+
+          if (userEmail) {
+            const emailData = getSubscriptionCancellationEmail({
+              userName: user.firstName || user.username || 'there',
+              planName: (user.publicMetadata as any)?.planName || "Early Access Plan",
+            });
+
+            await resend.emails.send({
+              from: 'Smart Content Solutions <noreply@smartcontentsolutions.co.uk>',
+              to: userEmail,
+              subject: emailData.subject,
+              html: emailData.html,
+            });
+
+            console.log(`Cancellation email sent to ${userEmail}`);
+          }
+        } catch (emailError) {
+          console.error('Failed to send cancellation email:', emailError);
+          // Don't fail the webhook if email fails
+        }
       }
 
       return res.status(200).json({ received: true });
