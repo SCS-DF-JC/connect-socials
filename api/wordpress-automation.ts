@@ -1,11 +1,22 @@
+// Increase the body size limit for this API route
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '10mb',
+        },
+    },
+};
+
 const N8N_WEBHOOK_URL = "https://n8n.smartcontentsolutions.co.uk/webhook/seo-content-publisher";
 
 export default async function handler(req: any, res: any) {
+    // Set CORS headers for all responses
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
         return res.status(200).end();
     }
 
@@ -20,7 +31,7 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ success: false, error: 'No request body provided' });
         }
 
-        // Create FormData for n8n (some n8n workflows expect form data)
+        // Create FormData for n8n (n8n workflows expect form data)
         const formData = new FormData();
 
         // Add all text fields
@@ -63,9 +74,6 @@ export default async function handler(req: any, res: any) {
 
         console.log('n8n response status:', n8nResponse.status);
         console.log('n8n response body:', responseText.substring(0, 500));
-
-        // Set CORS headers
-        res.setHeader('Access-Control-Allow-Origin', '*');
 
         if (n8nResponse.ok) {
             return res.status(200).json({

@@ -110,13 +110,22 @@ export default function CreatePostContent({ sites }: CreatePostContentProps) {
                     body: JSON.stringify(payload),
                 });
 
-                const result = await response.json();
+                // Handle non-JSON responses (like 413 errors)
+                let result;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
+                } else {
+                    const text = await response.text();
+                    result = { success: false, error: text || `HTTP ${response.status}` };
+                }
 
                 if (response.ok && result.success) {
                     successCount++;
                     console.log("Successfully triggered automation for", site.site_name);
                 } else {
-                    console.error("Failed to post to", site.site_name, result.error || response.statusText);
+                    const errorMsg = result.error || result.details || response.statusText || `HTTP ${response.status}`;
+                    console.error("Failed to post to", site.site_name, errorMsg);
                     failureCount++;
                 }
             } catch (e: any) {
