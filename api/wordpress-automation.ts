@@ -32,19 +32,20 @@ export default async function handler(req: any, res: any) {
         }
 
         // Create FormData for n8n (n8n workflows expect form data)
+        // IMPORTANT: n8n requires ALL fields to be present, even if empty
         const formData = new FormData();
 
-        // Add all text fields
-        if (body.topic) formData.append('topic', body.topic);
-        if (body.sections) formData.append('sections', body.sections);
-        if (body.keywords) formData.append('keywords', body.keywords);
-        if (body.location) formData.append('location', body.location);
-        if (body.occupation) formData.append('occupation', body.occupation);
-        if (body.audience) formData.append('audience', body.audience);
-        if (body.tone) formData.append('tone', body.tone);
-        if (body.wp_url) formData.append('wp_url', body.wp_url);
-        if (body.wp_username) formData.append('wp_username', body.wp_username);
-        if (body.wp_app_password) formData.append('wp_app_password', body.wp_app_password);
+        // Always append all required fields (use empty string if not provided)
+        formData.append('topic', body.topic || '');
+        formData.append('sections', body.sections || '3');
+        formData.append('keywords', body.keywords || '');
+        formData.append('location', body.location || '');
+        formData.append('occupation', body.occupation || '');
+        formData.append('audience', body.audience || '');
+        formData.append('tone', body.tone || 'Professional');
+        formData.append('wp_url', body.wp_url || '');
+        formData.append('wp_username', body.wp_username || '');
+        formData.append('wp_app_password', body.wp_app_password || '');
 
         // Handle image if present (base64 encoded from frontend)
         if (body.image && body.imageName) {
@@ -60,6 +61,7 @@ export default async function handler(req: any, res: any) {
         console.log('Forwarding request to n8n webhook:', N8N_WEBHOOK_URL);
         console.log('Request data:', {
             topic: body.topic,
+            location: body.location,
             wp_url: body.wp_url,
             hasImage: !!body.image,
         });
